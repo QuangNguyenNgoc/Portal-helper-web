@@ -1,6 +1,6 @@
 import "./App.css";
-import PortalHelperRefinedFlow from "./PortalHelperRefinedFlow";
+import { PlannerShell } from "./features/planner";
 
 export default function App() {
-  return <PortalHelperRefinedFlow />;
+  return <PlannerShell />;
 }

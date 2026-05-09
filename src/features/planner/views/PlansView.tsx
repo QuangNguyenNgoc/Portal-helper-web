@@ -1,0 +1,528 @@
+import { useMemo, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  ArrowRightLeft,
+  CheckCircle2,
+  ShieldCheck,
+  Target,
+} from "lucide-react";
+import { CompareRow } from "../components/CompareRow";
+import { MiniWeek } from "../components/MiniWeek";
+import { PlanListCard } from "../components/PlanListCard";
+import { ScoreBar } from "../components/ScoreBar";
+import { days, generatedPlans } from "../data/mock";
+import type { GeneratedResult, PlanId } from "../types";
+
+export function PlansView({
+  activePlanId,
+  setActivePlanId,
+  comparedPlanIds,
+  setComparedPlanIds,
+  generatedResult,
+  showGeneratedBanner,
+  onDismissGeneratedBanner,
+}: {
+  activePlanId: PlanId;
+  setActivePlanId: (value: PlanId) => void;
+  comparedPlanIds: PlanId[];
+  setComparedPlanIds: React.Dispatch<React.SetStateAction<PlanId[]>>;
+  generatedResult: GeneratedResult | null;
+  showGeneratedBanner: boolean;
+  onDismissGeneratedBanner: () => void;
+}) {
+  const activePlan = useMemo(
+    () =>
+      generatedPlans.find((plan) => plan.id === activePlanId) ||
+      generatedPlans[0],
+    [activePlanId],
+  );
+  const comparedPlans = useMemo(
+    () =>
+      generatedPlans.filter((plan) => comparedPlanIds.includes(plan.id)),
+    [comparedPlanIds],
+  );
+  const compareColumns = [comparedPlans[0], comparedPlans[1], comparedPlans[2]];
+  const [compareHint, setCompareHint] = useState<string | null>(null);
+
+  const toggleCompare = (id: PlanId) => {
+    setComparedPlanIds((prev) => {
+      if (prev.includes(id)) {
+        setCompareHint(null);
+        return prev.filter((item) => item !== id);
+      }
+      if (prev.length >= 3) {
+        setCompareHint("You can compare up to 3 plans at once.");
+        return prev;
+      }
+      setCompareHint(null);
+      return [...prev, id];
+    });
+  };
+
+  const compareLimitReached = comparedPlanIds.length >= 3;
+
+  return (
+    <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[380px_minmax(0,1fr)]">
+      <div className="space-y-4">
+        {showGeneratedBanner && generatedResult && (
+          <Card className="rounded-3xl border-emerald-200 bg-emerald-50 shadow-sm">
+            <CardContent className="flex flex-col gap-4 p-5 xl:flex-row xl:items-start xl:justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-sm font-medium text-emerald-900">
+                  <CheckCircle2 className="h-4 w-4" /> Generation complete
+                </div>
+                <div className="mt-2 text-xl font-semibold text-emerald-950">
+                  {generatedResult.planCount} plans generated from{" "}
+                  {generatedResult.constraintGroupCount} constraint groups
+                </div>
+                <div className="mt-1 text-sm text-emerald-800">
+                  Review tradeoffs derived from{" "}
+                  {generatedResult.constraintSlotCount} selected slots before
+                  locking a primary and backup.
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                className="rounded-xl border-emerald-200 bg-white text-emerald-900 hover:bg-white"
+                onClick={onDismissGeneratedBanner}
+              >
+                Dismiss
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card className="rounded-3xl border-slate-200 shadow-sm">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <CardTitle className="text-lg text-slate-900">
+                  Ranked plan list
+                </CardTitle>
+                <CardDescription>
+                  Open a plan in detail, then optionally add it to side-by-side
+                  comparison.
+                </CardDescription>
+              </div>
+              <Badge className="rounded-full bg-blue-100 text-blue-800 hover:bg-blue-100">
+                {comparedPlanIds.length} in compare
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {compareHint && (
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                {compareHint}
+              </div>
+            )}
+
+            {generatedPlans.map((plan) => (
+              <PlanListCard
+                key={plan.id}
+                plan={plan}
+                active={activePlanId === plan.id}
+                compared={comparedPlanIds.includes(plan.id)}
+                onOpen={() => setActivePlanId(plan.id)}
+                onToggleCompare={() => toggleCompare(plan.id)}
+                compareLimitReached={compareLimitReached}
+              />
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-3xl border-slate-200 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg text-slate-900">
+              Saved plan strategy
+            </CardTitle>
+            <CardDescription>
+              Support the primary + backup decision model instead of a single
+              winner.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-slate-600">
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+              <div className="font-medium text-emerald-900">
+                Plan A → Primary registration target
+              </div>
+              <div className="mt-1 text-emerald-800">
+                Best fit for constraints and still resilient if one section
+                shifts.
+              </div>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div className="font-medium text-slate-900">
+                Plan B → Lower-intensity backup
+              </div>
+              <div className="mt-1">
+                Safer if you want softer daily effort without rebuilding
+                constraints.
+              </div>
+            </div>
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+              <div className="font-medium text-amber-900">
+                Plan C → Emergency fallback
+              </div>
+              <div className="mt-1 text-amber-800">
+                Use only if preferred sections fill; timing alignment drops
+                noticeably.
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="space-y-4">
+        <Card className="rounded-3xl border-slate-200 shadow-sm">
+          <CardHeader className="pb-3">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+              <div>
+                <CardTitle className="text-xl text-slate-900">
+                  Generated Plans
+                </CardTitle>
+                <CardDescription>
+                  A review workspace where ranked plans, compare state, and
+                  decision support all stay anchored to the same constraint
+                  state.
+                </CardDescription>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Badge className="rounded-full bg-slate-100 text-slate-800 hover:bg-slate-100">
+                  Active plan: {activePlan.name}
+                </Badge>
+                <Badge className="rounded-full bg-blue-100 text-blue-800 hover:bg-blue-100">
+                  Compare: {comparedPlanIds.length}/3
+                </Badge>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="detail" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-3 rounded-2xl bg-slate-100">
+                <TabsTrigger value="detail" className="rounded-xl">
+                  Plan detail
+                </TabsTrigger>
+                <TabsTrigger value="compare" className="rounded-xl">
+                  Compare
+                </TabsTrigger>
+                <TabsTrigger value="courses" className="rounded-xl">
+                  Course fit
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="detail" className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+                  <Card className="rounded-2xl border-slate-200 bg-slate-50 shadow-none">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <CardTitle className="text-lg">
+                            {activePlan.name}
+                          </CardTitle>
+                          <CardDescription>
+                            {activePlan.summary}
+                          </CardDescription>
+                        </div>
+                        <Badge className="rounded-full bg-slate-900 text-white hover:bg-slate-900">
+                          Score {activePlan.score}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div className="rounded-2xl bg-white p-4">
+                          <div className="text-slate-500">Study days</div>
+                          <div className="mt-2 text-xl font-semibold text-slate-900">
+                            {activePlan.studyDays}
+                          </div>
+                        </div>
+                        <div className="rounded-2xl bg-white p-4">
+                          <div className="text-slate-500">Gap profile</div>
+                          <div className="mt-2 text-xl font-semibold text-slate-900">
+                            {activePlan.gapProfile}
+                          </div>
+                        </div>
+                        <div className="rounded-2xl bg-white p-4">
+                          <div className="text-slate-500">
+                            Seat availability
+                          </div>
+                          <div className="mt-2 text-xl font-semibold text-slate-900">
+                            {activePlan.seatAvailability}
+                          </div>
+                        </div>
+                        <div className="rounded-2xl bg-white p-4">
+                          <div className="text-slate-500">Friend match</div>
+                          <div className="mt-2 text-xl font-semibold text-slate-900">
+                            {activePlan.friendMatch}%
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                        <div className="mb-3 flex items-center gap-2 text-sm font-medium text-slate-900">
+                          <ShieldCheck className="h-4 w-4" /> Why this plan
+                          ranks here
+                        </div>
+                        <div className="space-y-2 text-sm text-slate-600">
+                          {activePlan.why.map((point) => (
+                            <div
+                              key={point}
+                              className="rounded-xl bg-slate-50 px-3 py-3"
+                            >
+                              {point}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                        <div className="mb-3 flex items-center gap-2 text-sm font-medium text-slate-900">
+                          <Target className="h-4 w-4" /> Score explanation
+                        </div>
+                        <div className="space-y-4">
+                          <ScoreBar
+                            label="Constraint fit"
+                            value={activePlan.scoreBreakdown.constraintFit}
+                          />
+                          <ScoreBar
+                            label="Gap efficiency"
+                            value={activePlan.scoreBreakdown.gapEfficiency}
+                          />
+                          <ScoreBar
+                            label="Daily balance"
+                            value={activePlan.scoreBreakdown.dailyBalance}
+                          />
+                          <ScoreBar
+                            label="Backup resilience"
+                            value={activePlan.scoreBreakdown.backupResilience}
+                          />
+                          <ScoreBar
+                            label="Friend matching"
+                            value={activePlan.scoreBreakdown.friendMatching}
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="rounded-2xl border-slate-200 bg-slate-50 shadow-none">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg">
+                        Weekly timetable
+                      </CardTitle>
+                      <CardDescription>
+                        Active plan opened in detail for dense but readable
+                        review.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {days.map((day) => (
+                        <div
+                          key={day}
+                          className="rounded-2xl border border-slate-200 bg-white p-3"
+                        >
+                          <div className="mb-2 text-sm font-semibold text-slate-900">
+                            {day}
+                          </div>
+                          <div className="space-y-2">
+                            {(activePlan.schedule[day] || []).length > 0 ? (
+                              activePlan.schedule[day].map((item) => (
+                                <div
+                                  key={item.title + item.time}
+                                  className={`rounded-xl px-3 py-3 text-sm ${item.tone}`}
+                                >
+                                  <div className="font-medium">
+                                    {item.title}
+                                  </div>
+                                  <div className="mt-1 text-xs opacity-80">
+                                    {item.time}
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="rounded-xl border border-dashed border-slate-200 px-3 py-5 text-center text-sm text-slate-400">
+                                No classes
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="compare" className="space-y-4">
+                {comparedPlans.length === 0 ? (
+                  <Card className="rounded-2xl border-slate-200 bg-slate-50 shadow-none">
+                    <CardContent className="flex min-h-[220px] flex-col items-center justify-center p-8 text-center">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm">
+                        <ArrowRightLeft className="h-5 w-5 text-slate-700" />
+                      </div>
+                      <div className="mt-4 text-lg font-semibold text-slate-900">
+                        No plans selected for compare
+                      </div>
+                      <div className="mt-2 max-w-md text-sm text-slate-500">
+                        Use the ranked plan list to add up to three plans.
+                        Compare stays inside Generated Plans because reviewing
+                        and deciding belong to the same workspace.
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <>
+                    <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+                      Comparing {comparedPlans.length} plan
+                      {comparedPlans.length > 1 ? "s" : ""}. The active plan can
+                      be different from the compare set, so users can open one
+                      plan in detail while benchmarking several candidates side
+                      by side.
+                    </div>
+
+                    <div
+                      className={`grid gap-4 ${comparedPlans.length >= 3 ? "xl:grid-cols-3" : comparedPlans.length === 2 ? "xl:grid-cols-2" : "xl:grid-cols-1"}`}
+                    >
+                      {comparedPlans.map((plan) => (
+                        <MiniWeek key={plan.id} plan={plan} />
+                      ))}
+                    </div>
+
+                    <Card className="rounded-2xl border-slate-200 bg-slate-50 shadow-none">
+                      <CardHeader>
+                        <CardTitle className="text-lg">
+                          Match score breakdown
+                        </CardTitle>
+                        <CardDescription>
+                          Direct comparison for decision-making, not just raw
+                          timetable viewing.
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-3 overflow-x-auto">
+                        <div className="grid grid-cols-[180px_repeat(3,minmax(180px,1fr))] gap-3 px-1 text-sm font-medium text-slate-500">
+                          <div>Metric</div>
+                          {compareColumns.map((plan, index) => (
+                            <div key={index}>{plan ? plan.name : ""}</div>
+                          ))}
+                        </div>
+                        <CompareRow
+                          label="Total score"
+                          values={compareColumns.map((plan) =>
+                            plan ? `${plan.score}` : "",
+                          )}
+                        />
+                        <CompareRow
+                          label="Study days"
+                          values={compareColumns.map((plan) =>
+                            plan ? `${plan.studyDays} days` : "",
+                          )}
+                        />
+                        <CompareRow
+                          label="Gap profile"
+                          values={compareColumns.map((plan) =>
+                            plan ? plan.gapProfile : "",
+                          )}
+                        />
+                        <CompareRow
+                          label="Daily load"
+                          values={compareColumns.map((plan) =>
+                            plan ? plan.dailyLoad : "",
+                          )}
+                        />
+                        <CompareRow
+                          label="Seat risk"
+                          values={compareColumns.map((plan) =>
+                            plan ? plan.seatRisk : "",
+                          )}
+                        />
+                        <CompareRow
+                          label="Friend match"
+                          values={compareColumns.map((plan) =>
+                            plan ? `${plan.friendMatch}%` : "",
+                          )}
+                        />
+                        <CompareRow
+                          label="Backup readiness"
+                          values={compareColumns.map((plan) =>
+                            plan ? plan.backup : "",
+                          )}
+                        />
+                        <CompareRow
+                          label="Conflict status"
+                          values={compareColumns.map((plan) =>
+                            plan ? plan.conflict : "",
+                          )}
+                        />
+                      </CardContent>
+                    </Card>
+                  </>
+                )}
+              </TabsContent>
+
+              <TabsContent
+                value="courses"
+                className="grid grid-cols-1 gap-4 xl:grid-cols-2"
+              >
+                <Card className="rounded-2xl border-slate-200 bg-slate-50 shadow-none">
+                  <CardHeader>
+                    <CardTitle className="text-lg">
+                      Courses in {activePlan.name}
+                    </CardTitle>
+                    <CardDescription>
+                      Readable summary of the active plan at course level.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3 text-sm text-slate-600">
+                    {activePlan.courses.map((course) => (
+                      <div
+                        key={course}
+                        className="rounded-2xl border border-slate-200 bg-white px-4 py-3"
+                      >
+                        {course}
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                <Card className="rounded-2xl border-slate-200 bg-slate-50 shadow-none">
+                  <CardHeader>
+                    <CardTitle className="text-lg">
+                      Daily load + gap analysis
+                    </CardTitle>
+                    <CardDescription>
+                      Explain the tradeoffs rather than leaving the user to
+                      infer them.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3 text-sm text-slate-600">
+                    {activePlan.notes.map((note) => (
+                      <div
+                        key={note}
+                        className="rounded-2xl border border-slate-200 bg-white px-4 py-3"
+                      >
+                        {note}
+                      </div>
+                    ))}
+                    <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900">
+                      This section stays intentionally explanatory because the
+                      product should help students decide, not just display raw
+                      schedules.
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
