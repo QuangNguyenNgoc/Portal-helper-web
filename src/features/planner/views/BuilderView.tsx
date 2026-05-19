@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,41 +14,25 @@ import { Check, Clock3, Plus, X } from "lucide-react";
 import { BuilderPreferenceCard } from "../components/BuilderPreferenceCard";
 import { CourseCard } from "../components/CourseCard";
 import { courses, days, quickPresets, timeSlots } from "../data/mock";
-import { useConstraintGrid } from "../hooks/useConstraintGrid";
 import { slotLabel, stateTone, toolLabel, toolTone } from "../lib/grid";
 import { isOnHour } from "../lib/time";
-import type { BuilderTool, ConstraintMap, ConstraintStats } from "../types";
+import type { BuilderTool, ConstraintStats } from "../types";
+import { useBuilderInteractions } from "../hooks/useBuilderInteractions";
 
-export function BuilderView({
-  constraints,
-  constraintStats,
-  setConstraints,
-  generating,
-  generationProgress,
-  generationStatusText,
-  fewerStudyDays,
-  setFewerStudyDays,
-  closeGapClasses,
-  setCloseGapClasses,
-  friendMatch,
-  setFriendMatch,
-}: {
-  constraints: ConstraintMap;
+interface BuilderViewProps {
   constraintStats: ConstraintStats;
-  setConstraints: React.Dispatch<React.SetStateAction<ConstraintMap>>;
   generating: boolean;
   generationProgress: number;
   generationStatusText: string;
-  fewerStudyDays: boolean;
-  setFewerStudyDays: (value: boolean) => void;
-  closeGapClasses: boolean;
-  setCloseGapClasses: (value: boolean) => void;
-  friendMatch: boolean;
-  setFriendMatch: (value: boolean) => void;
-}) {
-  // tool state is interaction-level, owned by this view
-  const [tool, setTool] = useState<BuilderTool>("prefer");
+}
 
+export function BuilderView({
+  constraintStats,
+  generating,
+  generationProgress,
+  generationStatusText,
+}: BuilderViewProps) {
+  const { tool, setTool, applyPreset, gridInteraction, constraints, modifiers } = useBuilderInteractions();
   const {
     hoveredCell,
     setHoveredCell,
@@ -57,47 +40,7 @@ export function BuilderView({
     previewInfo,
     onCellMouseDown,
     onCellMouseEnter,
-  } = useConstraintGrid(tool, setConstraints);
-
-  const applyPreset = (presetId: string) => {
-    const next = { ...constraints };
-
-    if (presetId === "early") {
-      ["Mon", "Tue", "Wed", "Thu", "Fri"].forEach((day) => {
-        ["07:00", "07:30", "08:00", "08:30"].forEach((time) => {
-          next[`${day}-${time}`] = "avoid";
-        });
-      });
-      setConstraints(next);
-      return;
-    }
-
-    if (presetId === "fri") {
-      [
-        "15:00",
-        "15:30",
-        "16:00",
-        "16:30",
-        "17:00",
-        "17:30",
-        "18:00",
-        "18:30",
-      ].forEach((time) => {
-        next[`Fri-${time}`] = "avoid";
-      });
-      setConstraints(next);
-      return;
-    }
-
-    if (presetId === "days") {
-      setFewerStudyDays(true);
-      return;
-    }
-
-    if (presetId === "gaps") {
-      setCloseGapClasses(true);
-    }
-  };
+  } = gridInteraction;
 
   return (
     <div className="space-y-4">
@@ -154,14 +97,7 @@ export function BuilderView({
             </CardContent>
           </Card>
 
-          <BuilderPreferenceCard
-            fewerStudyDays={fewerStudyDays}
-            setFewerStudyDays={setFewerStudyDays}
-            closeGapClasses={closeGapClasses}
-            setCloseGapClasses={setCloseGapClasses}
-            friendMatch={friendMatch}
-            setFriendMatch={setFriendMatch}
-          />
+          <BuilderPreferenceCard {...modifiers} />
         </div>
 
         <div className={generating ? "pointer-events-none opacity-70" : ""}>

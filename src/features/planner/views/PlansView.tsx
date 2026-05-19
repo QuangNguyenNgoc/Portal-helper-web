@@ -1,4 +1,3 @@
-import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,56 +18,24 @@ import { CompareRow } from "../components/CompareRow";
 import { MiniWeek } from "../components/MiniWeek";
 import { PlanListCard } from "../components/PlanListCard";
 import { ScoreBar } from "../components/ScoreBar";
-import { days, generatedPlans } from "../data/mock";
-import type { GeneratedResult, PlanId } from "../types";
+import { days } from "../data/mock";
+import { usePlanInteractions } from "../hooks/usePlanInteractions";
 
-export function PlansView({
-  activePlanId,
-  setActivePlanId,
-  comparedPlanIds,
-  setComparedPlanIds,
-  generatedResult,
-  showGeneratedBanner,
-  onDismissGeneratedBanner,
-}: {
-  activePlanId: PlanId;
-  setActivePlanId: (value: PlanId) => void;
-  comparedPlanIds: PlanId[];
-  setComparedPlanIds: React.Dispatch<React.SetStateAction<PlanId[]>>;
-  generatedResult: GeneratedResult | null;
-  showGeneratedBanner: boolean;
-  onDismissGeneratedBanner: () => void;
-}) {
-  const activePlan = useMemo(
-    () =>
-      generatedPlans.find((plan) => plan.id === activePlanId) ||
-      generatedPlans[0],
-    [activePlanId],
-  );
-  const comparedPlans = useMemo(
-    () =>
-      generatedPlans.filter((plan) => comparedPlanIds.includes(plan.id)),
-    [comparedPlanIds],
-  );
-  const compareColumns = [comparedPlans[0], comparedPlans[1], comparedPlans[2]];
-  const [compareHint, setCompareHint] = useState<string | null>(null);
-
-  const toggleCompare = (id: PlanId) => {
-    setComparedPlanIds((prev) => {
-      if (prev.includes(id)) {
-        setCompareHint(null);
-        return prev.filter((item) => item !== id);
-      }
-      if (prev.length >= 3) {
-        setCompareHint("You can compare up to 3 plans at once.");
-        return prev;
-      }
-      setCompareHint(null);
-      return [...prev, id];
-    });
-  };
-
-  const compareLimitReached = comparedPlanIds.length >= 3;
+export function PlansView() {
+  const {
+    activePlan,
+    activePlanId,
+    setActivePlanId,
+    comparedPlans,
+    comparedPlanIds,
+    compareColumns,
+    compareHint,
+    toggleCompare,
+    compareLimitReached,
+    generatedResult,
+    showGeneratedBanner,
+    dismissBanner,
+  } = usePlanInteractions();
 
   return (
     <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[380px_minmax(0,1fr)]">
@@ -93,7 +60,7 @@ export function PlansView({
               <Button
                 variant="outline"
                 className="rounded-xl border-emerald-200 bg-white text-emerald-900 hover:bg-white"
-                onClick={onDismissGeneratedBanner}
+                onClick={dismissBanner}
               >
                 Dismiss
               </Button>

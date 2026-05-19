@@ -1,35 +1,29 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { GraduationCap, Wand2 } from "lucide-react";
-import { initialConstraints, navItems } from "./data/mock";
+import { navItems } from "./data/mock";
 import { useGenerationFlow } from "./hooks/useGenerationFlow";
 import { buildConstraintStats, buildSummary } from "./lib/grid";
-import type {
-  ConstraintMap,
-  GeneratedResult,
-  NavId,
-  PlanId,
-} from "./types";
+import { PlannerProvider, usePlannerStore } from "./store/PlannerContext";
+
 import { BuilderView } from "./views/BuilderView";
 import { DashboardView } from "./views/DashboardView";
 import { PlansView } from "./views/PlansView";
 import { RightRail } from "./views/RightRail";
 import { SettingsView } from "./views/SettingsView";
 
-export default function PlannerShell() {
-  // ── App State ──
-  const [activeNav, setActiveNav] = useState<NavId>("builder");
-  const [constraints, setConstraints] =
-    useState<ConstraintMap>(initialConstraints);
-  const [activePlanId, setActivePlanId] = useState<PlanId>("A");
-  const [comparedPlanIds, setComparedPlanIds] = useState<PlanId[]>(["A", "B"]);
-  const [fewerStudyDays, setFewerStudyDays] = useState(true);
-  const [closeGapClasses, setCloseGapClasses] = useState(true);
-  const [friendMatch, setFriendMatch] = useState(false);
-  const [generatedResult, setGeneratedResult] =
-    useState<GeneratedResult | null>(null);
-  const [showGeneratedBanner, setShowGeneratedBanner] = useState(false);
+function PlannerShellInner() {
+  // ── Pull minimum required state from Context ──
+  const {
+    activeNav, setActiveNav,
+    constraints,
+    fewerStudyDays,
+    closeGapClasses,
+    friendMatch,
+    setGeneratedResult,
+    setShowGeneratedBanner
+  } = usePlannerStore();
 
   // ── Derived State ──
   const summaryItems = useMemo(() => buildSummary(constraints), [constraints]);
@@ -116,40 +110,21 @@ export default function PlannerShell() {
         >
           {activeNav === "dashboard" && (
             <DashboardView
-              generatedResult={generatedResult}
               constraintStats={constraintStats}
-              onGoBuilder={() => setActiveNav("builder")}
-              onGoPlans={() => setActiveNav("plans")}
             />
           )}
 
           {activeNav === "builder" && (
             <BuilderView
-              constraints={constraints}
               constraintStats={constraintStats}
-              setConstraints={setConstraints}
               generating={generation.generating}
               generationProgress={generation.progress}
               generationStatusText={generation.statusText}
-              fewerStudyDays={fewerStudyDays}
-              setFewerStudyDays={setFewerStudyDays}
-              closeGapClasses={closeGapClasses}
-              setCloseGapClasses={setCloseGapClasses}
-              friendMatch={friendMatch}
-              setFriendMatch={setFriendMatch}
             />
           )}
 
           {activeNav === "plans" && (
-            <PlansView
-              activePlanId={activePlanId}
-              setActivePlanId={setActivePlanId}
-              comparedPlanIds={comparedPlanIds}
-              setComparedPlanIds={setComparedPlanIds}
-              generatedResult={generatedResult}
-              showGeneratedBanner={showGeneratedBanner}
-              onDismissGeneratedBanner={() => setShowGeneratedBanner(false)}
-            />
+            <PlansView />
           )}
 
           {activeNav === "settings" && (
@@ -160,11 +135,8 @@ export default function PlannerShell() {
         {/* ── Right Rail ── */}
         <div className="xl:sticky xl:top-6 xl:self-start">
           <RightRail
-            activeNav={activeNav}
             summaryItems={summaryItems}
             constraintStats={constraintStats}
-            activePlanId={activePlanId}
-            comparedPlanIds={comparedPlanIds}
             onGenerate={generation.start}
             generating={generation.generating}
             generationProgress={generation.progress}
@@ -173,5 +145,13 @@ export default function PlannerShell() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PlannerShell() {
+  return (
+    <PlannerProvider>
+      <PlannerShellInner />
+    </PlannerProvider>
   );
 }

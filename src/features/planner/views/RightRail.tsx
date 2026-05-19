@@ -22,32 +22,28 @@ import { SummaryChip } from "../components/SummaryChip";
 import { generatedPlans } from "../data/mock";
 import type {
   ConstraintStats,
-  NavId,
-  PlanId,
   SummaryChipItem,
 } from "../types";
+import { usePlannerStore } from "../store/PlannerContext";
 
-export function RightRail({
-  activeNav,
-  summaryItems,
-  constraintStats,
-  activePlanId,
-  comparedPlanIds,
-  onGenerate,
-  generating,
-  generationProgress,
-  generationStatusText,
-}: {
-  activeNav: NavId;
+interface RightRailProps {
   summaryItems: SummaryChipItem[];
   constraintStats: ConstraintStats;
-  activePlanId: PlanId;
-  comparedPlanIds: PlanId[];
   onGenerate: () => void;
   generating: boolean;
   generationProgress: number;
   generationStatusText: string;
-}) {
+}
+
+export function RightRail({
+  summaryItems,
+  constraintStats,
+  onGenerate,
+  generating,
+  generationProgress,
+  generationStatusText,
+}: RightRailProps) {
+  const { activeNav, activePlanId, comparedPlanIds } = usePlannerStore();
   const activePlan = useMemo(
     () =>
       generatedPlans.find((plan) => plan.id === activePlanId) ||
