@@ -15,7 +15,8 @@ import { BuilderPreferenceCard } from "../components/BuilderPreferenceCard";
 import { CourseCard } from "../components/CourseCard";
 import { courses, days, quickPresets, timeSlots } from "../data/mock";
 import { slotLabel, stateTone, toolLabel, toolTone } from "../lib/grid";
-import { isOnHour } from "../lib/time";
+import { WeeklyPeriodGrid } from "../../../components/planner/WeeklyPeriodGrid";
+import { LabToggle } from "../../../components/planner/LabToggle";
 import type { BuilderTool, ConstraintStats } from "../types";
 import { useBuilderInteractions } from "../hooks/useBuilderInteractions";
 
@@ -154,13 +155,10 @@ export function BuilderView({
                     </Button>
                   ))}
                 </div>
-                <Button
-                  variant={showLabPeriods ? "default" : "outline"}
-                  onClick={() => toggleShowLabPeriods(!showLabPeriods)}
-                  className={`rounded-full ${showLabPeriods ? "bg-blue-600 hover:bg-blue-500" : "bg-white"}`}
-                >
-                  Hiển thị ca Thực hành (Tiết 2.5 & 8.5)
-                </Button>
+                <LabToggle
+                  showLabPeriods={showLabPeriods}
+                  onToggle={toggleShowLabPeriods}
+                />
               </div>
 
               <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
@@ -206,72 +204,18 @@ export function BuilderView({
                 </div>
               </div>
 
-              <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
-                <div className="grid grid-cols-[92px_repeat(6,minmax(124px,1fr))] border-b border-slate-200 bg-slate-50">
-                  <div className="px-4 py-4 text-sm font-medium text-slate-500">
-                    Tiết học
-                  </div>
-                  {days.map((day) => (
-                    <div
-                      key={day}
-                      className="border-l border-slate-200 px-4 py-4 text-sm font-semibold text-slate-900"
-                    >
-                      {day}
-                    </div>
-                  ))}
-                </div>
-                <div className="select-none">
-                  {visiblePeriods.map((time) => (
-                    <div
-                      key={time}
-                      className="grid grid-cols-[92px_repeat(6,minmax(124px,1fr))]"
-                    >
-                      <div className="border-b border-slate-200 px-4 py-3 text-sm font-medium text-slate-600">
-                        {time}
-                      </div>
-                      {days.map((day) => {
-                        const key = `${day}-${time}`;
-                        const state = constraints[key];
-                        const isPreview = previewKeys.has(key);
-                        const isHovered =
-                          !previewInfo &&
-                          hoveredCell?.day === day &&
-                          hoveredCell?.time === time;
-                        const cellClass = isPreview
-                          ? toolTone(tool)
-                          : stateTone(state);
-                        const label = isPreview
-                          ? toolLabel(tool)
-                          : slotLabel(state);
-
-                        return (
-                          <button
-                            key={key}
-                            onMouseDown={() => onCellMouseDown(day, time)}
-                            onMouseEnter={() => onCellMouseEnter(day, time)}
-                            onMouseLeave={() => {
-                              setHoveredCell(null);
-                            }}
-                            className={`relative h-[40px] border-b border-l border-slate-200 px-2 transition ${cellClass} ${isHovered ? "ring-1 ring-inset ring-slate-300" : ""}`}
-                          >
-                            <div className="flex h-full items-center justify-between rounded-xl border border-transparent px-2 text-left">
-                              <span className="text-[11px] font-medium opacity-80">
-                                {label}
-                              </span>
-                              {label === "Prefer" && (
-                                <Check className="h-3.5 w-3.5 opacity-70" />
-                              )}
-                              {label === "Avoid" && (
-                                <X className="h-3.5 w-3.5 opacity-70" />
-                              )}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <WeeklyPeriodGrid
+                days={days}
+                visiblePeriods={visiblePeriods}
+                constraints={constraints}
+                previewKeys={previewKeys}
+                previewInfo={previewInfo}
+                hoveredCell={hoveredCell}
+                tool={tool}
+                onCellMouseDown={onCellMouseDown}
+                onCellMouseEnter={onCellMouseEnter}
+                onCellMouseLeave={() => setHoveredCell(null)}
+              />
 
               <div className="grid grid-cols-1 gap-3 xl:grid-cols-4">
                 <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
