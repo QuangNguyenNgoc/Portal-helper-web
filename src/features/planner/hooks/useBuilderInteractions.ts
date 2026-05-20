@@ -13,6 +13,8 @@ export function useBuilderInteractions() {
     setCloseGapClasses,
     friendMatch,
     setFriendMatch,
+    showLabPeriods,
+    setShowLabPeriods,
   } = usePlannerStore();
 
   const [tool, setTool] = useState<BuilderTool>("prefer");
@@ -21,9 +23,9 @@ export function useBuilderInteractions() {
   const applyPreset = (presetId: string) => {
     const next = { ...constraints };
 
-    if (presetId === "early") {
-      ["Mon", "Tue", "Wed", "Thu", "Fri"].forEach((day) => {
-        ["07:00", "07:30", "08:00", "08:30"].forEach((time) => {
+    if (presetId === "morning") {
+      ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].forEach((day) => {
+        ['1', '2', '2.5', '4', '5'].forEach((time) => {
           next[`${day}-${time}`] = "avoid";
         });
       });
@@ -31,18 +33,11 @@ export function useBuilderInteractions() {
       return;
     }
 
-    if (presetId === "fri") {
-      [
-        "15:00",
-        "15:30",
-        "16:00",
-        "16:30",
-        "17:00",
-        "17:30",
-        "18:00",
-        "18:30",
-      ].forEach((time) => {
-        next[`Fri-${time}`] = "avoid";
+    if (presetId === "afternoon") {
+      ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].forEach((day) => {
+        ['6', '7', '8', '8.5', '9', '10'].forEach((time) => {
+          next[`${day}-${time}`] = "avoid";
+        });
       });
       setConstraints(next);
       return;
@@ -72,5 +67,7 @@ export function useBuilderInteractions() {
       friendMatch,
       setFriendMatch,
     },
+    showLabPeriods,
+    toggleShowLabPeriods: (val: boolean) => setShowLabPeriods(val),
   };
 }

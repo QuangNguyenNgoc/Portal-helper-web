@@ -21,6 +21,8 @@ interface PlannerContextType {
   setGeneratedResult: (result: GeneratedResult | null) => void;
   showGeneratedBanner: boolean;
   setShowGeneratedBanner: (show: boolean) => void;
+  showLabPeriods: boolean;
+  setShowLabPeriods: (show: boolean) => void;
 }
 
 const PlannerContext = createContext<PlannerContextType | undefined>(undefined);
@@ -35,6 +37,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   const [friendMatch, setFriendMatch] = useState(false);
   const [generatedResult, setGeneratedResult] = useState<GeneratedResult | null>(null);
   const [showGeneratedBanner, setShowGeneratedBanner] = useState(false);
+  const [showLabPeriods, setShowLabPeriods] = useState(false);
 
   const value = {
     activeNav, setActiveNav,
@@ -46,6 +49,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     friendMatch, setFriendMatch,
     generatedResult, setGeneratedResult,
     showGeneratedBanner, setShowGeneratedBanner,
+    showLabPeriods, setShowLabPeriods,
   };
 
   return <PlannerContext.Provider value={value}>{children}</PlannerContext.Provider>;

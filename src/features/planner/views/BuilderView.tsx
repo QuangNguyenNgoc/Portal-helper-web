@@ -32,7 +32,7 @@ export function BuilderView({
   generationProgress,
   generationStatusText,
 }: BuilderViewProps) {
-  const { tool, setTool, applyPreset, gridInteraction, constraints, modifiers } = useBuilderInteractions();
+  const { tool, setTool, applyPreset, gridInteraction, constraints, modifiers, showLabPeriods, toggleShowLabPeriods } = useBuilderInteractions();
   const {
     hoveredCell,
     setHoveredCell,
@@ -41,6 +41,8 @@ export function BuilderView({
     onCellMouseDown,
     onCellMouseEnter,
   } = gridInteraction;
+
+  const visiblePeriods = showLabPeriods ? timeSlots : timeSlots.filter(p => p !== '2.5' && p !== '8.5');
 
   return (
     <div className="space-y-4">
@@ -110,7 +112,7 @@ export function BuilderView({
                   </CardTitle>
                   <CardDescription>
                     This grid is the app's core state editor. Drag across a
-                    30-minute grid to define the constraint map that every
+                    period grid to define the constraint map that every
                     generated plan must answer to.
                   </CardDescription>
                 </div>
@@ -139,17 +141,26 @@ export function BuilderView({
               </div>
             </CardHeader>
             <CardContent className="space-y-5">
-              <div className="flex flex-wrap gap-2">
-                {quickPresets.map((preset) => (
-                  <Button
-                    key={preset.id}
-                    variant="outline"
-                    className="rounded-full bg-white"
-                    onClick={() => applyPreset(preset.id)}
-                  >
-                    {preset.label}
-                  </Button>
-                ))}
+              <div className="flex flex-wrap gap-2 items-center justify-between">
+                <div className="flex flex-wrap gap-2">
+                  {quickPresets.map((preset) => (
+                    <Button
+                      key={preset.id}
+                      variant="outline"
+                      className="rounded-full bg-white"
+                      onClick={() => applyPreset(preset.id)}
+                    >
+                      {preset.label}
+                    </Button>
+                  ))}
+                </div>
+                <Button
+                  variant={showLabPeriods ? "default" : "outline"}
+                  onClick={() => toggleShowLabPeriods(!showLabPeriods)}
+                  className={`rounded-full ${showLabPeriods ? "bg-blue-600 hover:bg-blue-500" : "bg-white"}`}
+                >
+                  Hiển thị ca Thực hành (Tiết 2.5 & 8.5)
+                </Button>
               </div>
 
               <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
@@ -184,31 +195,21 @@ export function BuilderView({
                     {previewInfo
                       ? previewInfo.label
                       : hoveredCell
-                        ? `${hoveredCell.day} · ${hoveredCell.time}`
+                        ? `${hoveredCell.day} · Tiết ${hoveredCell.time}`
                         : "Hover a slot or drag to select"}
                   </div>
                   <div className="mt-1 text-sm text-slate-500">
                     {previewInfo
-                      ? `${previewInfo.count} half-hour slots ready to apply`
+                      ? `${previewInfo.count} periods ready to apply`
                       : "Multi-select ranges across days and time rows"}
-                  </div>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="flex items-center gap-2 text-sm font-medium text-slate-900">
-                    <Clock3 className="h-4 w-4" /> Grid fidelity
-                  </div>
-                  <div className="mt-2 text-sm text-slate-600">
-                    30-minute granularity makes the planner feel closer to real
-                    registration data and avoids forcing students into
-                    unrealistic hourly buckets.
                   </div>
                 </div>
               </div>
 
               <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
-                <div className="grid grid-cols-[92px_repeat(5,minmax(124px,1fr))] border-b border-slate-200 bg-slate-50">
+                <div className="grid grid-cols-[92px_repeat(6,minmax(124px,1fr))] border-b border-slate-200 bg-slate-50">
                   <div className="px-4 py-4 text-sm font-medium text-slate-500">
-                    Time
+                    Tiết học
                   </div>
                   {days.map((day) => (
                     <div
@@ -220,14 +221,12 @@ export function BuilderView({
                   ))}
                 </div>
                 <div className="select-none">
-                  {timeSlots.map((time) => (
+                  {visiblePeriods.map((time) => (
                     <div
                       key={time}
-                      className="grid grid-cols-[92px_repeat(5,minmax(124px,1fr))]"
+                      className="grid grid-cols-[92px_repeat(6,minmax(124px,1fr))]"
                     >
-                      <div
-                        className={`border-b border-slate-200 px-4 ${isOnHour(time) ? "py-3.5 text-sm font-medium text-slate-600" : "py-3 text-xs text-slate-400"}`}
-                      >
+                      <div className="border-b border-slate-200 px-4 py-3 text-sm font-medium text-slate-600">
                         {time}
                       </div>
                       {days.map((day) => {

@@ -18,9 +18,9 @@ export const navItems: NavItem[] = [
 
 // ── Time grid ──
 
-export const days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+export const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export const timeSlots = generateHalfHourSlots(7 * 60, 18 * 60 + 30);
+export const timeSlots = ['1', '2', '2.5', '4', '5', '6', '7', '8', '8.5', '9', '10'];
 
 // ── Courses ──
 
@@ -34,8 +34,8 @@ export const courses = [
 // ── Quick presets ──
 
 export const quickPresets = [
-  { id: "early", label: "Avoid early mornings" },
-  { id: "fri", label: "Avoid Friday afternoon" },
+  { id: "morning", label: "Avoid mornings" },
+  { id: "afternoon", label: "Avoid afternoons" },
   { id: "days", label: "Fewer study days" },
   { id: "gaps", label: "Close-gap classes" },
 ];
@@ -43,18 +43,14 @@ export const quickPresets = [
 // ── Initial constraints ──
 
 export const initialConstraints: ConstraintMap = {
-  "Mon-07:00": "avoid",
-  "Mon-07:30": "avoid",
-  "Mon-08:00": "avoid",
-  "Tue-09:00": "prefer",
-  "Tue-09:30": "prefer",
-  "Tue-10:00": "prefer",
-  "Thu-13:00": "prefer",
-  "Thu-13:30": "prefer",
-  "Thu-14:00": "prefer",
-  "Fri-16:00": "avoid",
-  "Fri-16:30": "avoid",
-  "Fri-17:00": "avoid",
+  "Mon-1": "avoid",
+  "Mon-2": "avoid",
+  "Tue-4": "prefer",
+  "Tue-5": "prefer",
+  "Thu-6": "prefer",
+  "Thu-7": "prefer",
+  "Fri-9": "avoid",
+  "Fri-10": "avoid",
 };
 
 // ── Generated plans (mock data) ──
