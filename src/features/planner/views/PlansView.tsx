@@ -14,12 +14,13 @@ import {
   ShieldCheck,
   Target,
 } from "lucide-react";
-import { CompareRow } from "../components/CompareRow";
 import { MiniWeek } from "../components/MiniWeek";
-import { PlanListCard } from "../components/PlanListCard";
 import { ScoreBar } from "../components/ScoreBar";
-import { days } from "../data/mock";
+import { days, generatedPlans } from "../data/mock";
 import { usePlanInteractions } from "../hooks/usePlanInteractions";
+import { StatusBanner } from "../../../components/planner/StatusBanner";
+import { PlanList } from "../../../components/planner/PlanList";
+import { PlanComparisonTable } from "../../../components/planner/PlanComparisonTable";
 
 export function PlansView() {
   const {
@@ -40,71 +41,21 @@ export function PlansView() {
   return (
     <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[380px_minmax(0,1fr)]">
       <div className="space-y-4">
-        {showGeneratedBanner && generatedResult && (
-          <Card className="rounded-3xl border-emerald-200 bg-emerald-50 shadow-sm">
-            <CardContent className="flex flex-col gap-4 p-5 xl:flex-row xl:items-start xl:justify-between">
-              <div>
-                <div className="flex items-center gap-2 text-sm font-medium text-emerald-900">
-                  <CheckCircle2 className="h-4 w-4" /> Generation complete
-                </div>
-                <div className="mt-2 text-xl font-semibold text-emerald-950">
-                  {generatedResult.planCount} plans generated from{" "}
-                  {generatedResult.constraintGroupCount} constraint groups
-                </div>
-                <div className="mt-1 text-sm text-emerald-800">
-                  Review tradeoffs derived from{" "}
-                  {generatedResult.constraintSlotCount} selected slots before
-                  locking a primary and backup.
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                className="rounded-xl border-emerald-200 bg-white text-emerald-900 hover:bg-white"
-                onClick={dismissBanner}
-              >
-                Dismiss
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+        <StatusBanner
+          generatedResult={generatedResult}
+          showGeneratedBanner={showGeneratedBanner}
+          onDismiss={dismissBanner}
+        />
 
-        <Card className="rounded-3xl border-slate-200 shadow-sm">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <CardTitle className="text-lg text-slate-900">
-                  Ranked plan list
-                </CardTitle>
-                <CardDescription>
-                  Open a plan in detail, then optionally add it to side-by-side
-                  comparison.
-                </CardDescription>
-              </div>
-              <Badge className="rounded-full bg-blue-100 text-blue-800 hover:bg-blue-100">
-                {comparedPlanIds.length} in compare
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {compareHint && (
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                {compareHint}
-              </div>
-            )}
-
-            {generatedPlans.map((plan) => (
-              <PlanListCard
-                key={plan.id}
-                plan={plan}
-                active={activePlanId === plan.id}
-                compared={comparedPlanIds.includes(plan.id)}
-                onOpen={() => setActivePlanId(plan.id)}
-                onToggleCompare={() => toggleCompare(plan.id)}
-                compareLimitReached={compareLimitReached}
-              />
-            ))}
-          </CardContent>
-        </Card>
+        <PlanList
+          plans={generatedPlans}
+          activePlanId={activePlanId}
+          comparedPlanIds={comparedPlanIds}
+          onOpen={setActivePlanId}
+          onToggleCompare={toggleCompare}
+          compareLimitReached={compareLimitReached}
+          compareHint={compareHint}
+        />
 
         <Card className="rounded-3xl border-slate-200 shadow-sm">
           <CardHeader className="pb-3">
@@ -329,109 +280,10 @@ export function PlansView() {
               </TabsContent>
 
               <TabsContent value="compare" className="space-y-4">
-                {comparedPlans.length === 0 ? (
-                  <Card className="rounded-2xl border-slate-200 bg-slate-50 shadow-none">
-                    <CardContent className="flex min-h-[220px] flex-col items-center justify-center p-8 text-center">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm">
-                        <ArrowRightLeft className="h-5 w-5 text-slate-700" />
-                      </div>
-                      <div className="mt-4 text-lg font-semibold text-slate-900">
-                        No plans selected for compare
-                      </div>
-                      <div className="mt-2 max-w-md text-sm text-slate-500">
-                        Use the ranked plan list to add up to three plans.
-                        Compare stays inside Generated Plans because reviewing
-                        and deciding belong to the same workspace.
-                      </div>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <>
-                    <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
-                      Comparing {comparedPlans.length} plan
-                      {comparedPlans.length > 1 ? "s" : ""}. The active plan can
-                      be different from the compare set, so users can open one
-                      plan in detail while benchmarking several candidates side
-                      by side.
-                    </div>
-
-                    <div
-                      className={`grid gap-4 ${comparedPlans.length >= 3 ? "xl:grid-cols-3" : comparedPlans.length === 2 ? "xl:grid-cols-2" : "xl:grid-cols-1"}`}
-                    >
-                      {comparedPlans.map((plan) => (
-                        <MiniWeek key={plan.id} plan={plan} />
-                      ))}
-                    </div>
-
-                    <Card className="rounded-2xl border-slate-200 bg-slate-50 shadow-none">
-                      <CardHeader>
-                        <CardTitle className="text-lg">
-                          Match score breakdown
-                        </CardTitle>
-                        <CardDescription>
-                          Direct comparison for decision-making, not just raw
-                          timetable viewing.
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-3 overflow-x-auto">
-                        <div className="grid grid-cols-[180px_repeat(3,minmax(180px,1fr))] gap-3 px-1 text-sm font-medium text-slate-500">
-                          <div>Metric</div>
-                          {compareColumns.map((plan, index) => (
-                            <div key={index}>{plan ? plan.name : ""}</div>
-                          ))}
-                        </div>
-                        <CompareRow
-                          label="Total score"
-                          values={compareColumns.map((plan) =>
-                            plan ? `${plan.score}` : "",
-                          )}
-                        />
-                        <CompareRow
-                          label="Study days"
-                          values={compareColumns.map((plan) =>
-                            plan ? `${plan.studyDays} days` : "",
-                          )}
-                        />
-                        <CompareRow
-                          label="Gap profile"
-                          values={compareColumns.map((plan) =>
-                            plan ? plan.gapProfile : "",
-                          )}
-                        />
-                        <CompareRow
-                          label="Daily load"
-                          values={compareColumns.map((plan) =>
-                            plan ? plan.dailyLoad : "",
-                          )}
-                        />
-                        <CompareRow
-                          label="Seat risk"
-                          values={compareColumns.map((plan) =>
-                            plan ? plan.seatRisk : "",
-                          )}
-                        />
-                        <CompareRow
-                          label="Friend match"
-                          values={compareColumns.map((plan) =>
-                            plan ? `${plan.friendMatch}%` : "",
-                          )}
-                        />
-                        <CompareRow
-                          label="Backup readiness"
-                          values={compareColumns.map((plan) =>
-                            plan ? plan.backup : "",
-                          )}
-                        />
-                        <CompareRow
-                          label="Conflict status"
-                          values={compareColumns.map((plan) =>
-                            plan ? plan.conflict : "",
-                          )}
-                        />
-                      </CardContent>
-                    </Card>
-                  </>
-                )}
+                <PlanComparisonTable
+                  comparedPlans={comparedPlans}
+                  compareColumns={compareColumns}
+                />
               </TabsContent>
 
               <TabsContent
