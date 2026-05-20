@@ -17,14 +17,17 @@ import { courses, days, quickPresets, timeSlots } from "../data/mock";
 import { slotLabel, stateTone, toolLabel, toolTone } from "../lib/grid";
 import { WeeklyPeriodGrid } from "../../../components/planner/WeeklyPeriodGrid";
 import { LabToggle } from "../../../components/planner/LabToggle";
-import type { BuilderTool, ConstraintStats } from "../types";
+import type { BuilderTool, ConstraintStats, SummaryChipItem } from "../types";
 import { useBuilderInteractions } from "../hooks/useBuilderInteractions";
+import { RightRail } from "./RightRail";
 
 interface BuilderViewProps {
   constraintStats: ConstraintStats;
   generating: boolean;
   generationProgress: number;
   generationStatusText: string;
+  summaryItems: SummaryChipItem[];
+  onGenerate: () => void;
 }
 
 export function BuilderView({
@@ -32,6 +35,8 @@ export function BuilderView({
   generating,
   generationProgress,
   generationStatusText,
+  summaryItems,
+  onGenerate,
 }: BuilderViewProps) {
   const { tool, setTool, applyPreset, gridInteraction, constraints, modifiers, showLabPeriods, toggleShowLabPeriods } = useBuilderInteractions();
   const {
@@ -76,7 +81,8 @@ export function BuilderView({
         </Card>
       )}
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)_300px]">
+        {/* ── Left Column (Input + Output Fallback) ── */}
         <div className="space-y-4">
           <Card className="rounded-3xl border-slate-200 shadow-sm">
             <CardHeader className="pb-3">
@@ -101,8 +107,20 @@ export function BuilderView({
           </Card>
 
           <BuilderPreferenceCard {...modifiers} />
+
+          <div className="block xl:hidden">
+            <RightRail
+              summaryItems={summaryItems}
+              constraintStats={constraintStats}
+              onGenerate={onGenerate}
+              generating={generating}
+              generationProgress={generationProgress}
+              generationStatusText={generationStatusText}
+            />
+          </div>
         </div>
 
+        {/* ── Middle Column (Canvas) ── */}
         <div className={`min-w-0 overflow-hidden ${generating ? "pointer-events-none opacity-70" : ""}`}>
           <Card className="rounded-3xl border-slate-200 shadow-sm">
             <CardHeader className="pb-4">
@@ -161,7 +179,7 @@ export function BuilderView({
                 />
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="grid max-w-[800px] grid-cols-1 gap-3 sm:grid-cols-3">
                 <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
                   <div className="text-sm font-medium text-blue-900">
                     Core app state
@@ -219,7 +237,7 @@ export function BuilderView({
                 />
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid max-w-[800px] grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
                   <div className="text-sm font-medium text-blue-900">
                     Prefer slots
@@ -263,6 +281,18 @@ export function BuilderView({
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* ── Right Column (Output) ── */}
+        <div className="hidden space-y-4 xl:block">
+          <RightRail
+            summaryItems={summaryItems}
+            constraintStats={constraintStats}
+            onGenerate={onGenerate}
+            generating={generating}
+            generationProgress={generationProgress}
+            generationStatusText={generationStatusText}
+          />
         </div>
       </div>
     </div>

@@ -101,12 +101,12 @@ function PlannerShellInner() {
       </Card>
 
       {/* ── Main content area (fluid, takes all remaining width) ── */}
-      <div className="min-w-0 flex-1">
+      <div className="flex min-w-0 flex-1 flex-col gap-4 xl:flex-row xl:items-start">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
-          className="space-y-4"
+          className="min-w-0 flex-1 space-y-4"
         >
           {activeNav === "dashboard" && (
             <DashboardView
@@ -120,6 +120,8 @@ function PlannerShellInner() {
               generating={generation.generating}
               generationProgress={generation.progress}
               generationStatusText={generation.statusText}
+              summaryItems={summaryItems}
+              onGenerate={generation.start}
             />
           )}
 
@@ -132,17 +134,19 @@ function PlannerShellInner() {
           )}
         </motion.div>
 
-        {/* ── Right Rail (below main content) ── */}
-        <div className="mt-4">
-          <RightRail
-            summaryItems={summaryItems}
-            constraintStats={constraintStats}
-            onGenerate={generation.start}
-            generating={generation.generating}
-            generationProgress={generation.progress}
-            generationStatusText={generation.statusText}
-          />
-        </div>
+        {/* ── Right Rail (for non-builder views) ── */}
+        {activeNav !== "builder" && (
+          <div className="w-full shrink-0 xl:sticky xl:top-6 xl:w-[320px]">
+            <RightRail
+              summaryItems={summaryItems}
+              constraintStats={constraintStats}
+              onGenerate={generation.start}
+              generating={generation.generating}
+              generationProgress={generation.progress}
+              generationStatusText={generation.statusText}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
