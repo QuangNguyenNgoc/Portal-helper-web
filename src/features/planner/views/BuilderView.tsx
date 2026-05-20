@@ -46,7 +46,7 @@ export function BuilderView({
   const visiblePeriods = showLabPeriods ? timeSlots : timeSlots.filter(p => p !== '2.5' && p !== '8.5');
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4 overflow-hidden">
       {generating && (
         <Card className="rounded-3xl border-blue-200 bg-blue-50 shadow-sm">
           <CardContent className="p-5">
@@ -76,7 +76,7 @@ export function BuilderView({
         </Card>
       )}
 
-      <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[360px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
         <div className="space-y-4">
           <Card className="rounded-3xl border-slate-200 shadow-sm">
             <CardHeader className="pb-3">
@@ -103,7 +103,7 @@ export function BuilderView({
           <BuilderPreferenceCard {...modifiers} />
         </div>
 
-        <div className={generating ? "pointer-events-none opacity-70" : ""}>
+        <div className={`min-w-0 overflow-hidden ${generating ? "pointer-events-none opacity-70" : ""}`}>
           <Card className="rounded-3xl border-slate-200 shadow-sm">
             <CardHeader className="pb-4">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -125,10 +125,10 @@ export function BuilderView({
                   >
                     <TabsList className="rounded-2xl bg-slate-100 p-1">
                       <TabsTrigger value="prefer" className="rounded-xl px-4">
-                        <Check className="mr-2 h-4 w-4" /> Prefer
+                        <Check className="mr-2 h-4 w-4 shrink-0" /> Prefer
                       </TabsTrigger>
                       <TabsTrigger value="avoid" className="rounded-xl px-4">
-                        <X className="mr-2 h-4 w-4" /> Avoid
+                        <X className="mr-2 h-4 w-4 shrink-0" /> Avoid
                       </TabsTrigger>
                       <TabsTrigger value="erase" className="rounded-xl px-4">
                         Erase
@@ -142,13 +142,13 @@ export function BuilderView({
               </div>
             </CardHeader>
             <CardContent className="space-y-5">
-              <div className="flex flex-wrap gap-2 items-center justify-between">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="flex flex-wrap gap-2">
                   {quickPresets.map((preset) => (
                     <Button
                       key={preset.id}
                       variant="outline"
-                      className="rounded-full bg-white"
+                      className="rounded-full bg-white text-xs sm:text-sm"
                       onClick={() => applyPreset(preset.id)}
                     >
                       {preset.label}
@@ -161,7 +161,7 @@ export function BuilderView({
                 />
               </div>
 
-              <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
                   <div className="text-sm font-medium text-blue-900">
                     Core app state
@@ -181,7 +181,7 @@ export function BuilderView({
                   </div>
                   <div className="mt-1 text-sm opacity-80">
                     {tool === "erase"
-                      ? "Clear existing selections without affecting other ranges."
+                      ? "Clear selections without affecting other ranges."
                       : `Apply ${toolLabel(tool).toLowerCase()} state to every selected slot.`}
                   </div>
                 </div>
@@ -199,25 +199,27 @@ export function BuilderView({
                   <div className="mt-1 text-sm text-slate-500">
                     {previewInfo
                       ? `${previewInfo.count} periods ready to apply`
-                      : "Multi-select ranges across days and time rows"}
+                      : "Multi-select ranges across days and rows"}
                   </div>
                 </div>
               </div>
 
-              <WeeklyPeriodGrid
-                days={days}
-                visiblePeriods={visiblePeriods}
-                constraints={constraints}
-                previewKeys={previewKeys}
-                previewInfo={previewInfo}
-                hoveredCell={hoveredCell}
-                tool={tool}
-                onCellMouseDown={onCellMouseDown}
-                onCellMouseEnter={onCellMouseEnter}
-                onCellMouseLeave={() => setHoveredCell(null)}
-              />
+              <div className="min-w-0 w-full">
+                <WeeklyPeriodGrid
+                  days={days}
+                  visiblePeriods={visiblePeriods}
+                  constraints={constraints}
+                  previewKeys={previewKeys}
+                  previewInfo={previewInfo}
+                  hoveredCell={hoveredCell}
+                  tool={tool}
+                  onCellMouseDown={onCellMouseDown}
+                  onCellMouseEnter={onCellMouseEnter}
+                  onCellMouseLeave={() => setHoveredCell(null)}
+                />
+              </div>
 
-              <div className="grid grid-cols-1 gap-3 xl:grid-cols-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
                   <div className="text-sm font-medium text-blue-900">
                     Prefer slots
@@ -226,7 +228,7 @@ export function BuilderView({
                     {constraintStats.preferSlotCount}
                   </div>
                   <div className="mt-1 text-sm text-blue-800">
-                    {constraintStats.preferGroupCount} grouped preference rules
+                    {constraintStats.preferGroupCount} preference rules
                   </div>
                 </div>
                 <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
@@ -237,7 +239,7 @@ export function BuilderView({
                     {constraintStats.avoidSlotCount}
                   </div>
                   <div className="mt-1 text-sm text-rose-800">
-                    {constraintStats.avoidGroupCount} grouped blocked rules
+                    {constraintStats.avoidGroupCount} blocked rules
                   </div>
                 </div>
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -246,7 +248,7 @@ export function BuilderView({
                   </div>
                   <div className="mt-2 text-sm text-slate-600">
                     Drag in any direction to apply one action to a full
-                    rectangular region inside the single shared constraint map.
+                    rectangular region.
                   </div>
                 </div>
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -255,7 +257,7 @@ export function BuilderView({
                   </div>
                   <div className="mt-2 text-sm text-slate-600">
                     Switch tools instead of manually repainting cells back to
-                    open state while keeping the rest of the app state intact.
+                    open state.
                   </div>
                 </div>
               </div>

@@ -49,59 +49,59 @@ function PlannerShellInner() {
 
   // ── Render ──
   return (
-    <div className="min-h-screen bg-slate-100 p-4 md:p-6">
-      <div className="mx-auto grid max-w-[1680px] grid-cols-1 gap-4 xl:grid-cols-[260px_minmax(0,1fr)_340px]">
-        {/* ── Left Sidebar ── */}
-        <Card className="rounded-3xl border-slate-200 bg-slate-950 text-white shadow-xl">
-          <CardContent className="p-4">
-            <div className="mb-6 flex items-center gap-3 px-2 pt-2">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600">
-                <GraduationCap className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="text-lg font-semibold">Portal Helper</div>
-                <div className="text-sm text-slate-400">
-                  Constraint-driven academic planner
-                </div>
+    <div className="flex min-h-screen w-full flex-col bg-slate-100 p-4 md:flex-row md:items-start md:gap-4 md:p-6">
+      {/* ── Left Sidebar (fixed width, sticky) ── */}
+      <Card className="mb-4 w-full shrink-0 rounded-3xl border-slate-200 bg-slate-950 text-white shadow-xl md:sticky md:top-6 md:mb-0 md:w-[240px]">
+        <CardContent className="p-4">
+          <div className="mb-6 flex items-center gap-3 px-2 pt-2">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-600">
+              <GraduationCap className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="truncate text-lg font-semibold">Portal Helper</div>
+              <div className="truncate text-sm text-slate-400">
+                Constraint-driven academic planner
               </div>
             </div>
+          </div>
 
-            <div className="space-y-1">
-              {navItems.map(({ id, label, icon: Icon }) => {
-                const active = activeNav === id;
-                return (
-                  <button
-                    key={id}
-                    onClick={() => setActiveNav(id)}
-                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition ${
-                      active
-                        ? "bg-white text-slate-950"
-                        : "text-slate-300 hover:bg-slate-900"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span className="text-sm font-medium">{label}</span>
-                  </button>
-                );
-              })}
+          <div className="space-y-1">
+            {navItems.map(({ id, label, icon: Icon }) => {
+              const active = activeNav === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setActiveNav(id)}
+                  className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition ${
+                    active
+                      ? "bg-white text-slate-950"
+                      : "text-slate-300 hover:bg-slate-900"
+                  }`}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span className="truncate text-sm font-medium">{label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-6 hidden rounded-2xl border border-slate-800 bg-slate-900 p-4 md:block">
+            <div className="flex items-center gap-2 text-sm text-slate-300">
+              <Wand2 className="h-4 w-4 shrink-0" /> Constraint-first decision flow
             </div>
-
-            <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-4">
-              <div className="flex items-center gap-2 text-sm text-slate-300">
-                <Wand2 className="h-4 w-4" /> Constraint-first decision flow
-              </div>
-              <div className="mt-2 text-2xl font-semibold">
-                Constraints to Ranked Plans
-              </div>
-              <div className="mt-1 text-sm text-slate-400">
-                Build the core constraint state in Builder, then review,
-                compare, and decide inside Generated Plans.
-              </div>
+            <div className="mt-2 text-2xl font-semibold leading-tight">
+              Constraints to Ranked Plans
             </div>
-          </CardContent>
-        </Card>
+            <div className="mt-2 text-sm leading-relaxed text-slate-400">
+              Build the core constraint state in Builder, then review,
+              compare, and decide inside Generated Plans.
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* ── Main Content ── */}
+      {/* ── Main content area (fluid, takes all remaining width) ── */}
+      <div className="min-w-0 flex-1">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -132,8 +132,8 @@ function PlannerShellInner() {
           )}
         </motion.div>
 
-        {/* ── Right Rail ── */}
-        <div className="xl:sticky xl:top-6 xl:self-start">
+        {/* ── Right Rail (below main content) ── */}
+        <div className="mt-4">
           <RightRail
             summaryItems={summaryItems}
             constraintStats={constraintStats}

@@ -27,8 +27,9 @@ export function WeeklyPeriodGrid({
   onCellMouseLeave,
 }: WeeklyPeriodGridProps) {
   return (
-    <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
-      <div className="grid grid-cols-[92px_repeat(6,minmax(124px,1fr))] border-b border-slate-200 bg-slate-50">
+    <div className="overflow-x-auto overflow-y-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+      <div className="min-w-[836px]">
+        <div className="grid grid-cols-[92px_repeat(6,minmax(124px,1fr))] border-b border-slate-200 bg-slate-50">
         <div className="px-4 py-4 text-sm font-medium text-slate-500">
           Tiết học
         </div>
@@ -77,6 +78,7 @@ export function WeeklyPeriodGrid({
           </div>
         ))}
       </div>
+    </div>
     </div>
   );
 }
