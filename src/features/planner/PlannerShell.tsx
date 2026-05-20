@@ -1,7 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
-import { GraduationCap, Wand2 } from "lucide-react";
+import { GraduationCap, Wand2, ChevronLeft, ChevronRight } from "lucide-react";
 import { navItems } from "./data/mock";
 import { useGenerationFlow } from "./hooks/useGenerationFlow";
 import { buildConstraintStats, buildSummary } from "./lib/grid";
@@ -14,6 +14,8 @@ import { RightRail } from "./views/RightRail";
 import { SettingsView } from "./views/SettingsView";
 
 function PlannerShellInner() {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   // ── Pull minimum required state from Context ──
   const {
     activeNav, setActiveNav,
@@ -50,52 +52,83 @@ function PlannerShellInner() {
   // ── Render ──
   return (
     <div className="flex min-h-screen w-full flex-col bg-slate-100 p-4 md:flex-row md:items-start md:gap-4 md:p-6">
-      {/* ── Left Sidebar (fixed width, sticky) ── */}
-      <Card className="mb-4 w-full shrink-0 rounded-3xl border-slate-200 bg-slate-950 text-white shadow-xl md:sticky md:top-6 md:mb-0 md:w-[240px]">
-        <CardContent className="p-4">
-          <div className="mb-6 flex items-center gap-3 px-2 pt-2">
+      {/* ── Left Sidebar (collapsible, sticky) ── */}
+      <Card 
+        className={`mb-4 shrink-0 flex flex-col rounded-3xl border-slate-200 bg-slate-950 text-white shadow-xl transition-all duration-300 ease-in-out md:sticky md:top-6 md:mb-0
+        ${isExpanded ? "w-full md:w-[240px]" : "w-full md:w-[80px]"}`}
+      >
+        <CardContent className="flex flex-1 flex-col p-4">
+          {/* Header / Logo */}
+          <div className={`mb-6 flex items-center ${isExpanded ? "gap-3 px-2" : "justify-center"} pt-2`}>
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-600">
-              <GraduationCap className="h-5 w-5" />
+              <GraduationCap className="h-5 w-5 shrink-0" />
             </div>
-            <div className="min-w-0">
-              <div className="truncate text-lg font-semibold">Portal Helper</div>
-              <div className="truncate text-sm text-slate-400">
-                Constraint-driven academic planner
-              </div>
-            </div>
+            {isExpanded && (
+              <motion.div 
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: "auto" }}
+                exit={{ opacity: 0, width: 0 }}
+                className="min-w-0"
+              >
+                <div className="truncate text-lg font-semibold text-white">Portal Helper</div>
+                <div className="truncate text-[11px] uppercase tracking-wider text-slate-400">
+                  Constraint Planner
+                </div>
+              </motion.div>
+            )}
           </div>
 
-          <div className="space-y-1">
+          {/* Navigation */}
+          <div className="space-y-1 flex-1">
             {navItems.map(({ id, label, icon: Icon }) => {
               const active = activeNav === id;
               return (
                 <button
                   key={id}
                   onClick={() => setActiveNav(id)}
-                  className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition ${
+                  title={!isExpanded ? label : undefined}
+                  className={`flex w-full items-center rounded-2xl px-3 py-3 transition-colors ${
+                    isExpanded ? "gap-3 justify-start" : "justify-center"
+                  } ${
                     active
                       ? "bg-white text-slate-950"
                       : "text-slate-300 hover:bg-slate-900"
                   }`}
                 >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate text-sm font-medium">{label}</span>
+                  <Icon className="h-5 w-5 shrink-0" />
+                  {isExpanded && (
+                    <span className="truncate text-sm font-medium">{label}</span>
+                  )}
                 </button>
               );
             })}
           </div>
 
-          <div className="mt-6 hidden rounded-2xl border border-slate-800 bg-slate-900 p-4 md:block">
-            <div className="flex items-center gap-2 text-sm text-slate-300">
-              <Wand2 className="h-4 w-4 shrink-0" /> Constraint-first decision flow
-            </div>
-            <div className="mt-2 text-2xl font-semibold leading-tight">
-              Constraints to Ranked Plans
-            </div>
-            <div className="mt-2 text-sm leading-relaxed text-slate-400">
-              Build the core constraint state in Builder, then review,
-              compare, and decide inside Generated Plans.
-            </div>
+          {/* Info Block (Expanded Only) */}
+          {isExpanded && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mt-6 hidden rounded-2xl border border-slate-800 bg-slate-900 p-4 md:block"
+            >
+              <div className="flex items-center gap-2 text-sm text-slate-300">
+                <Wand2 className="h-4 w-4 shrink-0" /> Workflow
+              </div>
+              <div className="mt-2 text-sm leading-relaxed text-slate-400">
+                Build constraints in Builder, review inside Generated Plans.
+              </div>
+            </motion.div>
+          )}
+
+          {/* Sidebar Toggle Button */}
+          <div className={`mt-4 flex ${isExpanded ? "justify-end" : "justify-center"}`}>
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              title={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
+              className="flex h-10 w-10 items-center justify-center rounded-2xl text-slate-400 hover:bg-slate-900 hover:text-white transition-colors"
+            >
+              {isExpanded ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+            </button>
           </div>
         </CardContent>
       </Card>
