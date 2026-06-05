@@ -16,7 +16,7 @@ export function useGenerationFlow(
     "Ready to generate from your constraint map.",
   );
 
-  const { constraints, courses, setGeneratedPlansList } = usePlannerStore();
+  const { constraints, courses, pinnedSectionIds, setGeneratedPlansList } = usePlannerStore();
 
   const start = useCallback(async () => {
     if (generating) return;
@@ -39,7 +39,7 @@ export function useGenerationFlow(
 
     try {
       // Async call to the new Service Layer
-      const newPlans = await generateSchedulesAPI(constraints, courses);
+      const newPlans = await generateSchedulesAPI(constraints, courses, pinnedSectionIds);
       setGeneratedPlansList(newPlans);
 
       window.clearInterval(interval);
@@ -68,7 +68,7 @@ export function useGenerationFlow(
       setGenerating(false);
       setStatusText("Error generating schedules. Please try again.");
     }
-  }, [generating, constraints, courses, constraintStats, summaryItemsLength, modifierCount, onComplete, onNavigate, setGeneratedPlansList]);
+  }, [generating, constraints, courses, pinnedSectionIds, constraintStats, summaryItemsLength, modifierCount, onComplete, onNavigate, setGeneratedPlansList]);
 
   return { generating, progress, statusText, start };
 }

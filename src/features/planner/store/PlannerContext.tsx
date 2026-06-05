@@ -28,6 +28,8 @@ interface PlannerContextType {
   // Data State
   courses: Course[];
   addCourse: (course: Course) => void;
+  pinnedSectionIds: string[];
+  togglePinSection: (sectionId: string, courseCode: string) => void;
   generatedPlansList: Plan[];
   setGeneratedPlansList: (plans: Plan[]) => void;
   isFetchingData: boolean;
@@ -51,6 +53,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
 
   // Data State
   const [courses, setCourses] = useState<Course[]>([]);
+  const [pinnedSectionIds, setPinnedSectionIds] = useState<string[]>([]);
   const [generatedPlansList, setGeneratedPlansList] = useState<Plan[]>([]);
   const [isFetchingData, setIsFetchingData] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -79,6 +82,26 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const togglePinSection = useCallback((sectionId: string, courseCode: string) => {
+    setPinnedSectionIds(prev => {
+      // Find if we already have this section pinned
+      const isPinned = prev.includes(sectionId);
+      
+      // Filter out any currently pinned sections that belong to the SAME course
+      // We can identify if a section belongs to a course because we created the ID as `${courseCode}-XX`
+      // Or we can just filter by prefix.
+      const prevWithoutCourse = prev.filter(id => !id.startsWith(`${courseCode}-`));
+      
+      if (isPinned) {
+        // If it was already pinned, we just removed it above. Return that.
+        return prevWithoutCourse;
+      } else {
+        // If it wasn't pinned, add it (and the others for this course are already removed)
+        return [...prevWithoutCourse, sectionId];
+      }
+    });
+  }, []);
+
   const value = {
     activeNav, setActiveNav,
     constraints, setConstraints,
@@ -91,6 +114,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     showGeneratedBanner, setShowGeneratedBanner,
     showLabPeriods, setShowLabPeriods,
     courses, addCourse,
+    pinnedSectionIds, togglePinSection,
     generatedPlansList, setGeneratedPlansList,
     isFetchingData,
     fetchError,
