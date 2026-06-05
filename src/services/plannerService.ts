@@ -26,3 +26,22 @@ export async function generateSchedulesAPI(constraints: ConstraintMap, courses: 
   // We return the mock generated plans for now.
   return generatedPlans;
 }
+
+const universityCourseDatabase: Course[] = [
+  ...mockCourses,
+  { code: "CS222", name: "Computer Architecture", credits: 3 },
+  { code: "CS301", name: "Operating Systems", credits: 4 },
+  { code: "MATH310", name: "Linear Algebra", credits: 3 },
+  { code: "PHY202", name: "Electromagnetism", credits: 4 },
+  { code: "ENG101", name: "English Composition", credits: 2 },
+  { code: "HIST105", name: "World History", credits: 3 },
+];
+
+export async function searchUniversityCourses(query: string): Promise<Course[]> {
+  await delay(300);
+  const lowerQuery = query.toLowerCase();
+  return universityCourseDatabase.filter(c => 
+    c.code.toLowerCase().includes(lowerQuery) || 
+    c.name.toLowerCase().includes(lowerQuery)
+  );
+}

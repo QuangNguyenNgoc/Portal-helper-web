@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { days, quickPresets, timeSlots } from "../data/mock";
 import { slotLabel, stateTone, toolLabel, toolTone } from "../lib/grid";
 import { WeeklyPeriodGrid } from "../../../components/planner/WeeklyPeriodGrid";
 import { GridToolbar } from "../components/GridToolbar";
+import { CourseSearchModal } from "../../../components/planner/CourseSearchModal";
 import type { BuilderTool, ConstraintStats, SummaryChipItem } from "../types";
 import { useBuilderInteractions } from "../hooks/useBuilderInteractions";
 import { usePlannerStore } from "../store/PlannerContext";
@@ -39,6 +41,7 @@ export function BuilderView({
   summaryItems,
   onGenerate,
 }: BuilderViewProps) {
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const { tool, setTool, applyPreset, gridInteraction, constraints, modifiers, showLabPeriods, toggleShowLabPeriods } = useBuilderInteractions();
   const { courses } = usePlannerStore();
   const {
@@ -98,11 +101,17 @@ export function BuilderView({
               <Button
                 variant="outline"
                 className="w-full rounded-2xl border-dashed bg-transparent hover:bg-slate-50"
+                onClick={() => setIsSearchModalOpen(true)}
               >
                 <Plus className="mr-2 h-4 w-4" /> Add another course
               </Button>
             </div>
           </div>
+          
+          <CourseSearchModal 
+            isOpen={isSearchModalOpen} 
+            onClose={() => setIsSearchModalOpen(false)} 
+          />
 
           <div className="pt-6 border-t border-slate-200/60 opacity-80 transition-opacity hover:opacity-100">
              <div className="mb-4">

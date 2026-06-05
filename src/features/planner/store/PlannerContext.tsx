@@ -27,6 +27,7 @@ interface PlannerContextType {
   
   // Data State
   courses: Course[];
+  addCourse: (course: Course) => void;
   generatedPlansList: Plan[];
   setGeneratedPlansList: (plans: Plan[]) => void;
   isFetchingData: boolean;
@@ -71,6 +72,13 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const addCourse = useCallback((newCourse: Course) => {
+    setCourses(prev => {
+      if (prev.some(c => c.code === newCourse.code)) return prev;
+      return [...prev, newCourse];
+    });
+  }, []);
+
   const value = {
     activeNav, setActiveNav,
     constraints, setConstraints,
@@ -82,7 +90,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     generatedResult, setGeneratedResult,
     showGeneratedBanner, setShowGeneratedBanner,
     showLabPeriods, setShowLabPeriods,
-    courses,
+    courses, addCourse,
     generatedPlansList, setGeneratedPlansList,
     isFetchingData,
     fetchError,
