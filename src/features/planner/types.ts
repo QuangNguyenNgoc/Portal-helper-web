@@ -9,7 +9,7 @@ export type BuilderTool = ConstraintMode | "erase";
 export type ConstraintMap = Record<string, ConstraintMode>;
 
 // ── Plan domain ──
-export type PlanId = "A" | "B" | "C";
+export type PlanId = string;
 
 // ── Grid ──
 export type GridCell = {
