@@ -30,11 +30,15 @@ interface PlannerContextType {
   addCourse: (course: Course) => void;
   pinnedSectionIds: string[];
   togglePinSection: (sectionId: string, courseCode: string) => void;
+  clearPinnedSections: () => void;
   generatedPlansList: Plan[];
   setGeneratedPlansList: (plans: Plan[]) => void;
   isFetchingData: boolean;
   fetchError: string | null;
   initializeWorkspace: () => Promise<void>;
+  hasGenerationConflict: boolean;
+  setHasGenerationConflict: (val: boolean) => void;
+  clearAvoidConstraints: () => void;
 }
 
 const PlannerContext = createContext<PlannerContextType | undefined>(undefined);
@@ -57,6 +61,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   const [generatedPlansList, setGeneratedPlansList] = useState<Plan[]>([]);
   const [isFetchingData, setIsFetchingData] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [hasGenerationConflict, setHasGenerationConflict] = useState(false);
 
   const initializeWorkspace = useCallback(async () => {
     setIsFetchingData(true);
@@ -102,6 +107,18 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const clearPinnedSections = useCallback(() => setPinnedSectionIds([]), []);
+
+  const clearAvoidConstraints = useCallback(() => {
+    setConstraints(prev => {
+      const next = { ...prev };
+      Object.keys(next).forEach(key => {
+        if (next[key] === "avoid") delete next[key];
+      });
+      return next;
+    });
+  }, []);
+
   const value = {
     activeNav, setActiveNav,
     constraints, setConstraints,
@@ -114,11 +131,13 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     showGeneratedBanner, setShowGeneratedBanner,
     showLabPeriods, setShowLabPeriods,
     courses, addCourse,
-    pinnedSectionIds, togglePinSection,
+    pinnedSectionIds, togglePinSection, clearPinnedSections,
     generatedPlansList, setGeneratedPlansList,
     isFetchingData,
     fetchError,
     initializeWorkspace,
+    hasGenerationConflict, setHasGenerationConflict,
+    clearAvoidConstraints,
   };
 
   return <PlannerContext.Provider value={value}>{children}</PlannerContext.Provider>;

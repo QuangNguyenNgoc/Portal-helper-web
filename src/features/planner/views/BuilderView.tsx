@@ -19,6 +19,7 @@ import { slotLabel, stateTone, toolLabel, toolTone } from "../lib/grid";
 import { WeeklyPeriodGrid } from "../../../components/planner/WeeklyPeriodGrid";
 import { GridToolbar } from "../components/GridToolbar";
 import { CourseSearchModal } from "../../../components/planner/CourseSearchModal";
+import { EmptyState } from "../../../components/planner/EmptyState";
 import type { BuilderTool, ConstraintStats, SummaryChipItem } from "../types";
 import { useBuilderInteractions } from "../hooks/useBuilderInteractions";
 import { usePlannerStore } from "../store/PlannerContext";
@@ -43,7 +44,13 @@ export function BuilderView({
 }: BuilderViewProps) {
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const { tool, setTool, applyPreset, gridInteraction, constraints, modifiers, showLabPeriods, toggleShowLabPeriods } = useBuilderInteractions();
-  const { courses } = usePlannerStore();
+  const { 
+    courses, 
+    hasGenerationConflict, 
+    setHasGenerationConflict, 
+    clearAvoidConstraints, 
+    clearPinnedSections 
+  } = usePlannerStore();
   const {
     hoveredCell,
     setHoveredCell,
@@ -132,36 +139,54 @@ export function BuilderView({
           </div>
         </div>
 
-        {/* ── Middle Column (Canvas) ── */}
+        {/* ── Middle Column (Canvas or Conflict Fallback) ── */}
         <div className={`min-w-0 overflow-hidden ${generating ? "pointer-events-none opacity-70" : ""}`}>
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-slate-900">Constraint Canvas</h2>
-            <p className="text-sm text-slate-500 mt-1">
-              Drag across the grid to define availability. This sets the boundaries for the algorithm.
-            </p>
-          </div>
+          {hasGenerationConflict ? (
+            <div className="flex h-full min-h-[500px] flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white shadow-sm xl:col-span-2">
+              <EmptyState 
+                onReturn={() => setHasGenerationConflict(false)} 
+                onClearAvoids={() => {
+                  clearAvoidConstraints();
+                  setHasGenerationConflict(false);
+                }}
+                onUnpinAll={() => {
+                  clearPinnedSections();
+                  setHasGenerationConflict(false);
+                }}
+              />
+            </div>
+          ) : (
+            <>
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold text-slate-900">Constraint Canvas</h2>
+                <p className="text-sm text-slate-500 mt-1">
+                  Drag across the grid to define availability. This sets the boundaries for the algorithm.
+                </p>
+              </div>
 
-          <GridToolbar 
-             tool={tool} 
-             setTool={setTool} 
-             showLabPeriods={showLabPeriods} 
-             toggleShowLabPeriods={toggleShowLabPeriods} 
-          />
+              <GridToolbar 
+                 tool={tool} 
+                 setTool={setTool} 
+                 showLabPeriods={showLabPeriods} 
+                 toggleShowLabPeriods={toggleShowLabPeriods} 
+              />
 
-          <div className="min-w-0 w-full">
-            <WeeklyPeriodGrid
-              days={days}
-              visiblePeriods={visiblePeriods}
-              constraints={constraints}
-              previewKeys={previewKeys}
-              previewInfo={previewInfo}
-              hoveredCell={hoveredCell}
-              tool={tool}
-              onCellMouseDown={onCellMouseDown}
-              onCellMouseEnter={onCellMouseEnter}
-              onCellMouseLeave={() => setHoveredCell(null)}
-            />
-          </div>
+              <div className="min-w-0 w-full">
+                <WeeklyPeriodGrid
+                  days={days}
+                  visiblePeriods={visiblePeriods}
+                  constraints={constraints}
+                  previewKeys={previewKeys}
+                  previewInfo={previewInfo}
+                  hoveredCell={hoveredCell}
+                  tool={tool}
+                  onCellMouseDown={onCellMouseDown}
+                  onCellMouseEnter={onCellMouseEnter}
+                  onCellMouseLeave={() => setHoveredCell(null)}
+                />
+              </div>
+            </>
+          )}
         </div>
 
         {/* ── Right Column (Output) ── */}

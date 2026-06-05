@@ -16,7 +16,7 @@ export function useGenerationFlow(
     "Ready to generate from your constraint map.",
   );
 
-  const { constraints, courses, pinnedSectionIds, setGeneratedPlansList } = usePlannerStore();
+  const { constraints, courses, pinnedSectionIds, setGeneratedPlansList, setHasGenerationConflict } = usePlannerStore();
 
   const start = useCallback(async () => {
     if (generating) return;
@@ -47,13 +47,19 @@ export function useGenerationFlow(
       setProgress(100);
       setStatusText("Generation complete. Opening ranked plans...");
 
-      onComplete({
-        planCount: newPlans.length,
-        constraintSlotCount: constraintStats.totalSlotCount,
-        constraintGroupCount: constraintStats.totalGroupCount,
-        modifierCount: summaryItemsLength + modifierCount,
-      });
-      onNavigate("plans");
+      if (newPlans.length === 0) {
+        setHasGenerationConflict(true);
+        setStatusText("Conflict detected. Displaying error state.");
+      } else {
+        setHasGenerationConflict(false);
+        onComplete({
+          planCount: newPlans.length,
+          constraintSlotCount: constraintStats.totalSlotCount,
+          constraintGroupCount: constraintStats.totalGroupCount,
+          modifierCount: summaryItemsLength + modifierCount,
+        });
+        onNavigate("plans");
+      }
 
       const settle = window.setTimeout(() => {
         setGenerating(false);
