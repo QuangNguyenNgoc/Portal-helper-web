@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode, useCallback } from "react";
 import type { ConstraintMap, GeneratedResult, NavId, PlanId, Plan } from "../types";
-import { fetchCourses, fetchConstraints, Course } from "../../../services/plannerService";
+import { fetchCourses, fetchConstraints } from "../../../services/plannerService";
+import type { Course } from "../../../services/plannerService";
 
 interface PlannerContextType {
   activeNav: NavId;
