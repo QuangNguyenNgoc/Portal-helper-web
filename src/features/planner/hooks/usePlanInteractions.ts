@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { usePlannerStore } from "../store/PlannerContext";
-import { generatedPlans } from "../data/mock";
 import type { PlanId } from "../types";
 
 export function usePlanInteractions() {
@@ -12,18 +11,19 @@ export function usePlanInteractions() {
     generatedResult,
     showGeneratedBanner,
     setShowGeneratedBanner,
+    generatedPlansList,
   } = usePlannerStore();
 
   const activePlan = useMemo(
     () =>
-      generatedPlans.find((plan) => plan.id === activePlanId) ||
-      generatedPlans[0],
-    [activePlanId]
+      generatedPlansList.find((plan) => plan.id === activePlanId) ||
+      generatedPlansList[0],
+    [activePlanId, generatedPlansList]
   );
 
   const comparedPlans = useMemo(
-    () => generatedPlans.filter((plan) => comparedPlanIds.includes(plan.id)),
-    [comparedPlanIds]
+    () => generatedPlansList.filter((plan) => comparedPlanIds.includes(plan.id)),
+    [comparedPlanIds, generatedPlansList]
   );
 
   const compareColumns = [comparedPlans[0], comparedPlans[1], comparedPlans[2]];

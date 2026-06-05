@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
-import type { ConstraintMap, GeneratedResult, NavId, PlanId } from "../types";
-import { initialConstraints } from "../data/mock";
+import React, { createContext, useContext, useState, ReactNode, useCallback } from "react";
+import type { ConstraintMap, GeneratedResult, NavId, PlanId, Plan } from "../types";
+import { fetchCourses, fetchConstraints, Course } from "../../../services/plannerService";
 
 interface PlannerContextType {
   activeNav: NavId;
@@ -23,13 +23,21 @@ interface PlannerContextType {
   setShowGeneratedBanner: (show: boolean) => void;
   showLabPeriods: boolean;
   setShowLabPeriods: (show: boolean) => void;
+  
+  // Data State
+  courses: Course[];
+  generatedPlansList: Plan[];
+  setGeneratedPlansList: (plans: Plan[]) => void;
+  isFetchingData: boolean;
+  fetchError: string | null;
+  initializeWorkspace: () => Promise<void>;
 }
 
 const PlannerContext = createContext<PlannerContextType | undefined>(undefined);
 
 export function PlannerProvider({ children }: { children: ReactNode }) {
   const [activeNav, setActiveNav] = useState<NavId>("builder");
-  const [constraints, setConstraints] = useState<ConstraintMap>(initialConstraints);
+  const [constraints, setConstraints] = useState<ConstraintMap>({});
   const [activePlanId, setActivePlanId] = useState<PlanId>("A");
   const [comparedPlanIds, setComparedPlanIds] = useState<PlanId[]>(["A", "B"]);
   const [fewerStudyDays, setFewerStudyDays] = useState(true);
@@ -38,6 +46,29 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   const [generatedResult, setGeneratedResult] = useState<GeneratedResult | null>(null);
   const [showGeneratedBanner, setShowGeneratedBanner] = useState(false);
   const [showLabPeriods, setShowLabPeriods] = useState(false);
+
+  // Data State
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [generatedPlansList, setGeneratedPlansList] = useState<Plan[]>([]);
+  const [isFetchingData, setIsFetchingData] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  const initializeWorkspace = useCallback(async () => {
+    setIsFetchingData(true);
+    setFetchError(null);
+    try {
+      const [fetchedCourses, fetchedConstraints] = await Promise.all([
+        fetchCourses(),
+        fetchConstraints()
+      ]);
+      setCourses(fetchedCourses);
+      setConstraints(fetchedConstraints);
+    } catch (err) {
+      setFetchError("Failed to load planner data from university systems.");
+    } finally {
+      setIsFetchingData(false);
+    }
+  }, []);
 
   const value = {
     activeNav, setActiveNav,
@@ -50,6 +81,11 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     generatedResult, setGeneratedResult,
     showGeneratedBanner, setShowGeneratedBanner,
     showLabPeriods, setShowLabPeriods,
+    courses,
+    generatedPlansList, setGeneratedPlansList,
+    isFetchingData,
+    fetchError,
+    initializeWorkspace,
   };
 
   return <PlannerContext.Provider value={value}>{children}</PlannerContext.Provider>;

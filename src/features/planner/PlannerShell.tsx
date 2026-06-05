@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { GraduationCap, Wand2, ChevronLeft, ChevronRight } from "lucide-react";
@@ -24,8 +24,16 @@ function PlannerShellInner() {
     closeGapClasses,
     friendMatch,
     setGeneratedResult,
-    setShowGeneratedBanner
+    setShowGeneratedBanner,
+    isFetchingData,
+    fetchError,
+    initializeWorkspace
   } = usePlannerStore();
+
+  // Initialize workspace data on mount
+  useEffect(() => {
+    initializeWorkspace();
+  }, [initializeWorkspace]);
 
   // ── Derived State ──
   const summaryItems = useMemo(() => buildSummary(constraints), [constraints]);
@@ -49,7 +57,26 @@ function PlannerShellInner() {
     (nav) => setActiveNav(nav),
   );
 
-  // ── Render ──
+  // ── Render States ──
+  if (isFetchingData) {
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center bg-slate-100 p-4">
+        <div className="flex items-center gap-3 text-slate-500">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
+          <span className="font-medium text-lg">Syncing university data...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center bg-slate-100 p-4">
+        <div className="text-rose-600 font-medium">{fetchError}</div>
+        <button onClick={() => initializeWorkspace()} className="mt-4 px-4 py-2 bg-slate-900 text-white rounded-lg">Retry</button>
+      </div>
+    );
+  }
   return (
     <div className="flex min-h-screen w-full flex-col bg-slate-100 p-4 md:flex-row md:items-start md:gap-4 md:p-6">
       {/* ── Left Sidebar (collapsible, sticky) ── */}

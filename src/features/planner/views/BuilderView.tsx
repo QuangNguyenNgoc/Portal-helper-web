@@ -13,12 +13,13 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Check, Clock3, Plus, X } from "lucide-react";
 import { BuilderPreferenceCard } from "../components/BuilderPreferenceCard";
 import { CourseCard } from "../components/CourseCard";
-import { courses, days, quickPresets, timeSlots } from "../data/mock";
+import { days, quickPresets, timeSlots } from "../data/mock";
 import { slotLabel, stateTone, toolLabel, toolTone } from "../lib/grid";
 import { WeeklyPeriodGrid } from "../../../components/planner/WeeklyPeriodGrid";
 import { GridToolbar } from "../components/GridToolbar";
 import type { BuilderTool, ConstraintStats, SummaryChipItem } from "../types";
 import { useBuilderInteractions } from "../hooks/useBuilderInteractions";
+import { usePlannerStore } from "../store/PlannerContext";
 import { RightRail } from "./RightRail";
 
 interface BuilderViewProps {
@@ -39,6 +40,7 @@ export function BuilderView({
   onGenerate,
 }: BuilderViewProps) {
   const { tool, setTool, applyPreset, gridInteraction, constraints, modifiers, showLabPeriods, toggleShowLabPeriods } = useBuilderInteractions();
+  const { courses } = usePlannerStore();
   const {
     hoveredCell,
     setHoveredCell,

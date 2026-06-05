@@ -16,11 +16,12 @@ import {
 } from "lucide-react";
 import { MiniWeek } from "../components/MiniWeek";
 import { ScoreBar } from "../components/ScoreBar";
-import { days, generatedPlans } from "../data/mock";
+import { days } from "../data/mock";
 import { usePlanInteractions } from "../hooks/usePlanInteractions";
 import { StatusBanner } from "../../../components/planner/StatusBanner";
 import { PlanList } from "../../../components/planner/PlanList";
 import { PlanComparisonTable } from "../../../components/planner/PlanComparisonTable";
+import { usePlannerStore } from "../store/PlannerContext";
 
 export function PlansView() {
   const {
@@ -37,6 +38,8 @@ export function PlansView() {
     showGeneratedBanner,
     dismissBanner,
   } = usePlanInteractions();
+  
+  const { generatedPlansList } = usePlannerStore();
 
   return (
     <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[380px_minmax(0,1fr)]">
@@ -48,7 +51,7 @@ export function PlansView() {
         />
 
         <PlanList
-          plans={generatedPlans}
+          plans={generatedPlansList}
           activePlanId={activePlanId}
           comparedPlanIds={comparedPlanIds}
           onOpen={setActivePlanId}
