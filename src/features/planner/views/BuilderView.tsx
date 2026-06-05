@@ -16,7 +16,7 @@ import { CourseCard } from "../components/CourseCard";
 import { courses, days, quickPresets, timeSlots } from "../data/mock";
 import { slotLabel, stateTone, toolLabel, toolTone } from "../lib/grid";
 import { WeeklyPeriodGrid } from "../../../components/planner/WeeklyPeriodGrid";
-import { LabToggle } from "../../../components/planner/LabToggle";
+import { GridToolbar } from "../components/GridToolbar";
 import type { BuilderTool, ConstraintStats, SummaryChipItem } from "../types";
 import { useBuilderInteractions } from "../hooks/useBuilderInteractions";
 import { RightRail } from "./RightRail";
@@ -83,32 +83,33 @@ export function BuilderView({
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)_300px]">
         {/* ── Left Column (Input + Output Fallback) ── */}
-        <div className="space-y-4">
-          <Card className="rounded-3xl border-slate-200 shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg text-slate-900">
-                Course selection
-              </CardTitle>
-              <CardDescription>
-                Add target courses before generating schedules.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
+        <div className="space-y-8 pr-2">
+          <div>
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold text-slate-900">Course selection</h2>
+              <p className="text-sm text-slate-500 mt-1">Add target courses before generating schedules.</p>
+            </div>
+            <div className="space-y-3">
               {courses.map((course) => (
                 <CourseCard key={course.code} {...course} />
               ))}
               <Button
                 variant="outline"
-                className="w-full rounded-2xl border-dashed"
+                className="w-full rounded-2xl border-dashed bg-transparent hover:bg-slate-50"
               >
                 <Plus className="mr-2 h-4 w-4" /> Add another course
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <BuilderPreferenceCard {...modifiers} />
+          <div className="pt-6 border-t border-slate-200/60 opacity-80 transition-opacity hover:opacity-100">
+             <div className="mb-4">
+               <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Secondary Scoring</h3>
+             </div>
+             <BuilderPreferenceCard {...modifiers} />
+          </div>
 
-          <div className="block xl:hidden">
+          <div className="block pt-6 border-t border-slate-200/60 xl:hidden">
             <RightRail
               summaryItems={summaryItems}
               constraintStats={constraintStats}
@@ -122,165 +123,34 @@ export function BuilderView({
 
         {/* ── Middle Column (Canvas) ── */}
         <div className={`min-w-0 overflow-hidden ${generating ? "pointer-events-none opacity-70" : ""}`}>
-          <Card className="rounded-3xl border-slate-200 shadow-sm">
-            <CardHeader className="pb-4">
-              <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                <div>
-                  <CardTitle className="text-xl text-slate-900">
-                    Weekly drag-select constraint grid
-                  </CardTitle>
-                  <CardDescription>
-                    This grid is the app's core state editor. Drag across a
-                    period grid to define the constraint map that every
-                    generated plan must answer to.
-                  </CardDescription>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Tabs
-                    value={tool}
-                    onValueChange={(value) => setTool(value as BuilderTool)}
-                    className="w-auto"
-                  >
-                    <TabsList className="rounded-2xl bg-slate-100 p-1">
-                      <TabsTrigger value="prefer" className="rounded-xl px-4">
-                        <Check className="mr-2 h-4 w-4 shrink-0" /> Prefer
-                      </TabsTrigger>
-                      <TabsTrigger value="avoid" className="rounded-xl px-4">
-                        <X className="mr-2 h-4 w-4 shrink-0" /> Avoid
-                      </TabsTrigger>
-                      <TabsTrigger value="erase" className="rounded-xl px-4">
-                        Erase
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                  <Badge className="rounded-full bg-blue-100 px-3 py-1 text-blue-800 hover:bg-blue-100">
-                    Desktop-first interaction
-                  </Badge>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div className="flex flex-wrap gap-2">
-                  {quickPresets.map((preset) => (
-                    <Button
-                      key={preset.id}
-                      variant="outline"
-                      className="rounded-full bg-white text-xs sm:text-sm"
-                      onClick={() => applyPreset(preset.id)}
-                    >
-                      {preset.label}
-                    </Button>
-                  ))}
-                </div>
-                <LabToggle
-                  showLabPeriods={showLabPeriods}
-                  onToggle={toggleShowLabPeriods}
-                />
-              </div>
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-slate-900">Constraint Canvas</h2>
+            <p className="text-sm text-slate-500 mt-1">
+              Drag across the grid to define availability. This sets the boundaries for the algorithm.
+            </p>
+          </div>
 
-              <div className="grid max-w-[800px] grid-cols-1 gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
-                  <div className="text-sm font-medium text-blue-900">
-                    Core app state
-                  </div>
-                  <div className="mt-2 text-xl font-semibold text-blue-950">
-                    {constraintStats.totalSlotCount} selected slots
-                  </div>
-                  <div className="mt-1 text-sm text-blue-800">
-                    {constraintStats.totalGroupCount} grouped rules currently
-                    drive generation and plan scoring.
-                  </div>
-                </div>
-                <div className={`rounded-2xl border p-4 ${toolTone(tool)}`}>
-                  <div className="text-sm font-medium">Active tool</div>
-                  <div className="mt-2 text-xl font-semibold">
-                    {toolLabel(tool)}
-                  </div>
-                  <div className="mt-1 text-sm opacity-80">
-                    {tool === "erase"
-                      ? "Clear selections without affecting other ranges."
-                      : `Apply ${toolLabel(tool).toLowerCase()} state to every selected slot.`}
-                  </div>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="text-sm font-medium text-slate-900">
-                    Selection preview
-                  </div>
-                  <div className="mt-2 text-base font-semibold text-slate-900">
-                    {previewInfo
-                      ? previewInfo.label
-                      : hoveredCell
-                        ? `${hoveredCell.day} · Tiết ${hoveredCell.time}`
-                        : "Hover a slot or drag to select"}
-                  </div>
-                  <div className="mt-1 text-sm text-slate-500">
-                    {previewInfo
-                      ? `${previewInfo.count} periods ready to apply`
-                      : "Multi-select ranges across days and rows"}
-                  </div>
-                </div>
-              </div>
+          <GridToolbar 
+             tool={tool} 
+             setTool={setTool} 
+             showLabPeriods={showLabPeriods} 
+             toggleShowLabPeriods={toggleShowLabPeriods} 
+          />
 
-              <div className="min-w-0 w-full">
-                <WeeklyPeriodGrid
-                  days={days}
-                  visiblePeriods={visiblePeriods}
-                  constraints={constraints}
-                  previewKeys={previewKeys}
-                  previewInfo={previewInfo}
-                  hoveredCell={hoveredCell}
-                  tool={tool}
-                  onCellMouseDown={onCellMouseDown}
-                  onCellMouseEnter={onCellMouseEnter}
-                  onCellMouseLeave={() => setHoveredCell(null)}
-                />
-              </div>
-
-              <div className="grid max-w-[800px] grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
-                  <div className="text-sm font-medium text-blue-900">
-                    Prefer slots
-                  </div>
-                  <div className="mt-2 text-2xl font-semibold text-blue-950">
-                    {constraintStats.preferSlotCount}
-                  </div>
-                  <div className="mt-1 text-sm text-blue-800">
-                    {constraintStats.preferGroupCount} preference rules
-                  </div>
-                </div>
-                <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
-                  <div className="text-sm font-medium text-rose-900">
-                    Avoid slots
-                  </div>
-                  <div className="mt-2 text-2xl font-semibold text-rose-950">
-                    {constraintStats.avoidSlotCount}
-                  </div>
-                  <div className="mt-1 text-sm text-rose-800">
-                    {constraintStats.avoidGroupCount} blocked rules
-                  </div>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="text-sm font-medium text-slate-900">
-                    Multi-select
-                  </div>
-                  <div className="mt-2 text-sm text-slate-600">
-                    Drag in any direction to apply one action to a full
-                    rectangular region.
-                  </div>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="text-sm font-medium text-slate-900">
-                    Erase mode
-                  </div>
-                  <div className="mt-2 text-sm text-slate-600">
-                    Switch tools instead of manually repainting cells back to
-                    open state.
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="min-w-0 w-full">
+            <WeeklyPeriodGrid
+              days={days}
+              visiblePeriods={visiblePeriods}
+              constraints={constraints}
+              previewKeys={previewKeys}
+              previewInfo={previewInfo}
+              hoveredCell={hoveredCell}
+              tool={tool}
+              onCellMouseDown={onCellMouseDown}
+              onCellMouseEnter={onCellMouseEnter}
+              onCellMouseLeave={() => setHoveredCell(null)}
+            />
+          </div>
         </div>
 
         {/* ── Right Column (Output) ── */}
