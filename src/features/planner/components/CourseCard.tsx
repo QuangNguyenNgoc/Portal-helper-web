@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Lock, LockOpen, ChevronDown, ChevronUp } from "lucide-react";
+import { Lock, LockOpen, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { usePlannerStore } from "../store/PlannerContext";
 import type { CourseSection } from "../../../services/plannerService";
 
@@ -52,7 +52,7 @@ export function CourseCard({
   sections?: CourseSection[];
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { pinnedSectionIds, togglePinSection } = usePlannerStore();
+  const { pinnedSectionIds, togglePinSection, removeCourse } = usePlannerStore();
 
   const hasPinnedSection = sections?.some(s => pinnedSectionIds.includes(s.id));
 
@@ -70,9 +70,18 @@ export function CourseCard({
           </div>
           <div className="mt-1 text-sm text-slate-500">{name}</div>
         </div>
-        <Badge variant="outline" className="rounded-full">
-          {credits} cr
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="rounded-full">
+            {credits} cr
+          </Badge>
+          <button
+            onClick={() => removeCourse(code)}
+            className="flex h-7 w-7 items-center justify-center rounded-full text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors"
+            title={`Remove ${code}`}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
       </div>
 
       {sections && sections.length > 0 && (

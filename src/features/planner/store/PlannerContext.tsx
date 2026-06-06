@@ -32,6 +32,7 @@ interface PlannerContextType {
   // Data State
   courses: Course[];
   addCourse: (course: Course) => void;
+  removeCourse: (courseCode: string) => void;
   pinnedSectionIds: string[];
   togglePinSection: (sectionId: string, courseCode: string) => void;
   clearPinnedSections: () => void;
@@ -166,6 +167,11 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const removeCourse = useCallback((courseCode: string) => {
+    setCourses(prev => prev.filter(c => c.code !== courseCode));
+    setPinnedSectionIds(prev => prev.filter(id => !id.startsWith(`${courseCode}-`)));
+  }, []);
+
   const togglePinSection = useCallback((sectionId: string, courseCode: string) => {
     setPinnedSectionIds(prev => {
       // Find if we already have this section pinned
@@ -211,7 +217,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     generatedResult, setGeneratedResult,
     showGeneratedBanner, setShowGeneratedBanner,
     showLabPeriods, setShowLabPeriods,
-    courses, addCourse,
+    courses, addCourse, removeCourse,
     pinnedSectionIds, togglePinSection, clearPinnedSections,
     generatedPlansList, setGeneratedPlansList,
     isFetchingData,
