@@ -96,8 +96,9 @@ export function BuilderView({
 
       <div className="flex-1 min-h-0 grid grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)_300px] overflow-hidden">
         {/* ── Left Column (Input + Output Fallback) ── */}
-        <div className="h-full overflow-y-auto pr-2 pb-8 space-y-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          <div>
+        <div className="flex h-full flex-col min-h-0 pr-2 pb-8">
+          {/* Header & Warning (Fixed) */}
+          <div className="shrink-0 mb-4">
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-slate-900">Course selection</h2>
@@ -113,10 +114,14 @@ export function BuilderView({
               </div>
             </div>
             {totalCredits > 22 && (
-              <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 shadow-sm">
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 shadow-sm">
                 <strong>High credit load:</strong> Finding a conflict-free schedule may be impossible. Consider dropping a course if generation fails.
               </div>
             )}
+          </div>
+
+          {/* List & Secondary Actions (Scrollable) */}
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <div className="space-y-3">
               {courses.map((course) => (
                 <CourseCard key={course.code} {...course} />
@@ -129,30 +134,30 @@ export function BuilderView({
                 <Plus className="mr-2 h-4 w-4" /> Add another course
               </Button>
             </div>
+            
+            <div className="pt-6 border-t border-slate-200/60 opacity-80 transition-opacity hover:opacity-100">
+               <div className="mb-4">
+                 <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Secondary Scoring</h3>
+               </div>
+               <BuilderPreferenceCard {...modifiers} />
+            </div>
+
+            <div className="block pt-6 border-t border-slate-200/60 xl:hidden">
+              <RightRail
+                summaryItems={summaryItems}
+                constraintStats={constraintStats}
+                onGenerate={onGenerate}
+                generating={generating}
+                generationProgress={generationProgress}
+                generationStatusText={generationStatusText}
+              />
+            </div>
           </div>
           
           <CourseSearchModal 
             isOpen={isSearchModalOpen} 
             onClose={() => setIsSearchModalOpen(false)} 
           />
-
-          <div className="pt-6 border-t border-slate-200/60 opacity-80 transition-opacity hover:opacity-100">
-             <div className="mb-4">
-               <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Secondary Scoring</h3>
-             </div>
-             <BuilderPreferenceCard {...modifiers} />
-          </div>
-
-          <div className="block pt-6 border-t border-slate-200/60 xl:hidden">
-            <RightRail
-              summaryItems={summaryItems}
-              constraintStats={constraintStats}
-              onGenerate={onGenerate}
-              generating={generating}
-              generationProgress={generationProgress}
-              generationStatusText={generationStatusText}
-            />
-          </div>
         </div>
 
         {/* ── Middle Column (Canvas or Conflict Fallback) ── */}
