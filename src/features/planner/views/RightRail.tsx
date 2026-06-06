@@ -19,6 +19,7 @@ import {
   Users,
 } from "lucide-react";
 import { SummaryChip } from "../components/SummaryChip";
+import { BuilderPreferenceCard } from "../components/BuilderPreferenceCard";
 import { generatedPlans } from "../data/mock";
 import type {
   ConstraintStats,
@@ -43,7 +44,13 @@ export function RightRail({
   generationProgress,
   generationStatusText,
 }: RightRailProps) {
-  const { activeNav, activePlanId, comparedPlanIds } = usePlannerStore();
+  const { 
+    activeNav, activePlanId, comparedPlanIds,
+    fewerStudyDays, setFewerStudyDays,
+    closeGapClasses, setCloseGapClasses,
+    friendMatch, setFriendMatch
+  } = usePlannerStore();
+  
   const activePlan = useMemo(
     () =>
       generatedPlans.find((plan) => plan.id === activePlanId) ||
@@ -129,6 +136,17 @@ export function RightRail({
               <SummaryChip key={item.id} item={item} />
             ))}
           </div>
+
+          <Separator />
+          
+          <BuilderPreferenceCard 
+            fewerStudyDays={fewerStudyDays}
+            setFewerStudyDays={setFewerStudyDays}
+            closeGapClasses={closeGapClasses}
+            setCloseGapClasses={setCloseGapClasses}
+            friendMatch={friendMatch}
+            setFriendMatch={setFriendMatch}
+          />
 
           <Separator />
 
