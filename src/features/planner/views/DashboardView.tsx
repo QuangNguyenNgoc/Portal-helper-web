@@ -12,19 +12,17 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import type { ConstraintStats, GeneratedResult } from "../types";
+import type { ConstraintStats } from "../types";
+import { usePlannerStore } from "../store/PlannerContext";
 
 export function DashboardView({
-  generatedResult,
   constraintStats,
-  onGoBuilder,
-  onGoPlans,
 }: {
-  generatedResult: GeneratedResult | null;
   constraintStats: ConstraintStats;
-  onGoBuilder: () => void;
-  onGoPlans: () => void;
 }) {
+  const { generatedResult, setActiveNav } = usePlannerStore();
+  const onGoBuilder = () => setActiveNav("builder");
+  const onGoPlans = () => setActiveNav("plans");
   return (
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-[0.95fr_1.05fr]">
       <Card className="rounded-3xl border-slate-200 shadow-sm">

@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { generatedPlans } from "../data/mock";
+import { useCallback, useRef, useState } from "react";
 import type { ConstraintStats, GeneratedResult, NavId } from "../types";
+import { generateSchedulesAPI } from "../../../services/plannerService";
+import { usePlannerStore } from "../store/PlannerContext";
 
 export function useGenerationFlow(
   constraintStats: ConstraintStats,
@@ -15,20 +16,13 @@ export function useGenerationFlow(
     "Ready to generate from your constraint map.",
   );
 
-  // Capture stats at generation start to avoid erratic re-fires
-  const statsSnapshot = useRef<{
-    constraintSlotCount: number;
-    constraintGroupCount: number;
-    pendingRuleCount: number;
-  } | null>(null);
+  const { constraints, courses, pinnedSectionIds, setGeneratedPlansList, setHasGenerationConflict } = usePlannerStore();
 
-  useEffect(() => {
-    if (!generating) return;
-
+  const start = useCallback(async () => {
+    if (generating) return;
+    setGenerating(true);
     setProgress(12);
-    setStatusText(
-      "Validating the constraint map before searching schedule options...",
-    );
+    setStatusText("Validating the constraint map before searching schedule options...");
 
     const interval = window.setInterval(() => {
       setProgress((current) => {
@@ -40,62 +34,47 @@ export function useGenerationFlow(
     }, 180);
 
     const stepTwo = window.setTimeout(() => {
-      setStatusText(
-        "Searching sections against your constraints, filtering conflicts, and evaluating backup paths...",
-      );
+      setStatusText("Searching sections against your constraints, filtering conflicts...");
     }, 520);
 
-    const stepThree = window.setTimeout(() => {
-      setStatusText(
-        "Ranking plans by fit, gap efficiency, and resilience...",
-      );
-    }, 980);
+    try {
+      // Async call to the new Service Layer
+      const newPlans = await generateSchedulesAPI(constraints, courses, pinnedSectionIds);
+      setGeneratedPlansList(newPlans);
 
-    const finish = window.setTimeout(() => {
       window.clearInterval(interval);
+      window.clearTimeout(stepTwo);
       setProgress(100);
       setStatusText("Generation complete. Opening ranked plans...");
 
-      const snap = statsSnapshot.current;
-      if (snap) {
+      if (newPlans.length === 0) {
+        setHasGenerationConflict(true);
+        setStatusText("Conflict detected. Displaying error state.");
+      } else {
+        setHasGenerationConflict(false);
         onComplete({
-          planCount: generatedPlans.length,
-          constraintSlotCount: snap.constraintSlotCount,
-          constraintGroupCount: snap.constraintGroupCount,
-          modifierCount: snap.pendingRuleCount - snap.constraintGroupCount,
+          planCount: newPlans.length,
+          constraintSlotCount: constraintStats.totalSlotCount,
+          constraintGroupCount: constraintStats.totalGroupCount,
+          modifierCount: summaryItemsLength + modifierCount,
         });
+        onNavigate("plans");
       }
-      onNavigate("plans");
 
       const settle = window.setTimeout(() => {
         setGenerating(false);
         setProgress(0);
         setStatusText("Ready to generate from your constraint map.");
       }, 420);
-
+      
       return () => window.clearTimeout(settle);
-    }, 1700);
-
-    return () => {
+    } catch (err) {
       window.clearInterval(interval);
       window.clearTimeout(stepTwo);
-      window.clearTimeout(stepThree);
-      window.clearTimeout(finish);
-    };
-    // Only re-fire when `generating` changes — snapshot captures the rest
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [generating]);
-
-  const start = useCallback(() => {
-    if (generating) return;
-    const behaviorRuleCount = modifierCount;
-    statsSnapshot.current = {
-      constraintSlotCount: constraintStats.totalSlotCount,
-      constraintGroupCount: constraintStats.totalGroupCount,
-      pendingRuleCount: summaryItemsLength + behaviorRuleCount,
-    };
-    setGenerating(true);
-  }, [generating, constraintStats, summaryItemsLength, modifierCount]);
+      setGenerating(false);
+      setStatusText("Error generating schedules. Please try again.");
+    }
+  }, [generating, constraints, courses, pinnedSectionIds, constraintStats, summaryItemsLength, modifierCount, onComplete, onNavigate, setGeneratedPlansList]);
 
   return { generating, progress, statusText, start };
 }

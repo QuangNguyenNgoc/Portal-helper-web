@@ -1,35 +1,39 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
-import { GraduationCap, Wand2 } from "lucide-react";
-import { initialConstraints, navItems } from "./data/mock";
+import { GraduationCap, Wand2, ChevronLeft, ChevronRight } from "lucide-react";
+import { navItems } from "./data/mock";
 import { useGenerationFlow } from "./hooks/useGenerationFlow";
 import { buildConstraintStats, buildSummary } from "./lib/grid";
-import type {
-  ConstraintMap,
-  GeneratedResult,
-  NavId,
-  PlanId,
-} from "./types";
+import { PlannerProvider, usePlannerStore } from "./store/PlannerContext";
+
 import { BuilderView } from "./views/BuilderView";
 import { DashboardView } from "./views/DashboardView";
 import { PlansView } from "./views/PlansView";
 import { RightRail } from "./views/RightRail";
 import { SettingsView } from "./views/SettingsView";
 
-export default function PlannerShell() {
-  // ── App State ──
-  const [activeNav, setActiveNav] = useState<NavId>("builder");
-  const [constraints, setConstraints] =
-    useState<ConstraintMap>(initialConstraints);
-  const [activePlanId, setActivePlanId] = useState<PlanId>("A");
-  const [comparedPlanIds, setComparedPlanIds] = useState<PlanId[]>(["A", "B"]);
-  const [fewerStudyDays, setFewerStudyDays] = useState(true);
-  const [closeGapClasses, setCloseGapClasses] = useState(true);
-  const [friendMatch, setFriendMatch] = useState(false);
-  const [generatedResult, setGeneratedResult] =
-    useState<GeneratedResult | null>(null);
-  const [showGeneratedBanner, setShowGeneratedBanner] = useState(false);
+function PlannerShellInner() {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // ── Pull minimum required state from Context ──
+  const {
+    activeNav, setActiveNav,
+    constraints,
+    fewerStudyDays,
+    closeGapClasses,
+    friendMatch,
+    setGeneratedResult,
+    setShowGeneratedBanner,
+    isFetchingData,
+    fetchError,
+    initializeWorkspace
+  } = usePlannerStore();
+
+  // Initialize workspace data on mount
+  useEffect(() => {
+    initializeWorkspace();
+  }, [initializeWorkspace]);
 
   // ── Derived State ──
   const summaryItems = useMemo(() => buildSummary(constraints), [constraints]);
@@ -53,103 +57,136 @@ export default function PlannerShell() {
     (nav) => setActiveNav(nav),
   );
 
-  // ── Render ──
+  // ── Render States ──
+  if (isFetchingData) {
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center bg-slate-100 p-4">
+        <div className="flex items-center gap-3 text-slate-500">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
+          <span className="font-medium text-lg">Syncing university data...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center bg-slate-100 p-4">
+        <div className="text-rose-600 font-medium">{fetchError}</div>
+        <button onClick={() => initializeWorkspace()} className="mt-4 px-4 py-2 bg-slate-900 text-white rounded-lg">Retry</button>
+      </div>
+    );
+  }
   return (
-    <div className="min-h-screen bg-slate-100 p-4 md:p-6">
-      <div className="mx-auto grid max-w-[1680px] grid-cols-1 gap-4 xl:grid-cols-[260px_minmax(0,1fr)_340px]">
-        {/* ── Left Sidebar ── */}
-        <Card className="rounded-3xl border-slate-200 bg-slate-950 text-white shadow-xl">
-          <CardContent className="p-4">
-            <div className="mb-6 flex items-center gap-3 px-2 pt-2">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600">
-                <GraduationCap className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="text-lg font-semibold">Portal Helper</div>
-                <div className="text-sm text-slate-400">
-                  Constraint-driven academic planner
+    <div className="flex min-h-screen w-full flex-col bg-slate-100 p-4 md:flex-row md:items-start md:gap-4 md:p-6">
+      {/* ── Left Sidebar (collapsible, sticky) ── */}
+      <Card 
+        className={`mb-4 shrink-0 flex flex-col rounded-3xl border-slate-200 bg-slate-950 text-white shadow-xl transition-all duration-300 ease-in-out md:sticky md:top-6 md:mb-0
+        ${isExpanded ? "w-full md:w-[240px]" : "w-full md:w-[80px]"}`}
+      >
+        <CardContent className="flex flex-1 flex-col p-4">
+          {/* Header / Logo */}
+          <div className={`mb-6 flex items-center ${isExpanded ? "gap-3 px-2" : "justify-center"} pt-2`}>
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-600">
+              <GraduationCap className="h-5 w-5 shrink-0" />
+            </div>
+            {isExpanded && (
+              <motion.div 
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: "auto" }}
+                exit={{ opacity: 0, width: 0 }}
+                className="min-w-0"
+              >
+                <div className="truncate text-lg font-semibold text-white">Portal Helper</div>
+                <div className="truncate text-[11px] uppercase tracking-wider text-slate-400">
+                  Constraint Planner
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            )}
+          </div>
 
-            <div className="space-y-1">
-              {navItems.map(({ id, label, icon: Icon }) => {
-                const active = activeNav === id;
-                return (
-                  <button
-                    key={id}
-                    onClick={() => setActiveNav(id)}
-                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition ${
-                      active
-                        ? "bg-white text-slate-950"
-                        : "text-slate-300 hover:bg-slate-900"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span className="text-sm font-medium">{label}</span>
-                  </button>
-                );
-              })}
-            </div>
+          {/* Navigation */}
+          <div className="space-y-1 flex-1">
+            {navItems.map(({ id, label, icon: Icon }) => {
+              const active = activeNav === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setActiveNav(id)}
+                  title={!isExpanded ? label : undefined}
+                  className={`flex w-full items-center rounded-2xl px-3 py-3 transition-colors ${
+                    isExpanded ? "gap-3 justify-start" : "justify-center"
+                  } ${
+                    active
+                      ? "bg-white text-slate-950"
+                      : "text-slate-300 hover:bg-slate-900"
+                  }`}
+                >
+                  <Icon className="h-5 w-5 shrink-0" />
+                  {isExpanded && (
+                    <span className="truncate text-sm font-medium">{label}</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
 
-            <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-4">
+          {/* Info Block (Expanded Only) */}
+          {isExpanded && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mt-6 hidden rounded-2xl border border-slate-800 bg-slate-900 p-4 md:block"
+            >
               <div className="flex items-center gap-2 text-sm text-slate-300">
-                <Wand2 className="h-4 w-4" /> Constraint-first decision flow
+                <Wand2 className="h-4 w-4 shrink-0" /> Workflow
               </div>
-              <div className="mt-2 text-2xl font-semibold">
-                Constraints to Ranked Plans
+              <div className="mt-2 text-sm leading-relaxed text-slate-400">
+                Build constraints in Builder, review inside Generated Plans.
               </div>
-              <div className="mt-1 text-sm text-slate-400">
-                Build the core constraint state in Builder, then review,
-                compare, and decide inside Generated Plans.
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </motion.div>
+          )}
 
-        {/* ── Main Content ── */}
+          {/* Sidebar Toggle Button */}
+          <div className={`mt-4 flex ${isExpanded ? "justify-end" : "justify-center"}`}>
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              title={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
+              className="flex h-10 w-10 items-center justify-center rounded-2xl text-slate-400 hover:bg-slate-900 hover:text-white transition-colors"
+            >
+              {isExpanded ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+            </button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── Main content area (fluid, takes all remaining width) ── */}
+      <div className="flex min-w-0 flex-1 flex-col gap-4 xl:flex-row xl:items-start">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
-          className="space-y-4"
+          className="min-w-0 flex-1 space-y-4"
         >
           {activeNav === "dashboard" && (
             <DashboardView
-              generatedResult={generatedResult}
               constraintStats={constraintStats}
-              onGoBuilder={() => setActiveNav("builder")}
-              onGoPlans={() => setActiveNav("plans")}
             />
           )}
 
           {activeNav === "builder" && (
             <BuilderView
-              constraints={constraints}
               constraintStats={constraintStats}
-              setConstraints={setConstraints}
               generating={generation.generating}
               generationProgress={generation.progress}
               generationStatusText={generation.statusText}
-              fewerStudyDays={fewerStudyDays}
-              setFewerStudyDays={setFewerStudyDays}
-              closeGapClasses={closeGapClasses}
-              setCloseGapClasses={setCloseGapClasses}
-              friendMatch={friendMatch}
-              setFriendMatch={setFriendMatch}
+              summaryItems={summaryItems}
+              onGenerate={generation.start}
             />
           )}
 
           {activeNav === "plans" && (
-            <PlansView
-              activePlanId={activePlanId}
-              setActivePlanId={setActivePlanId}
-              comparedPlanIds={comparedPlanIds}
-              setComparedPlanIds={setComparedPlanIds}
-              generatedResult={generatedResult}
-              showGeneratedBanner={showGeneratedBanner}
-              onDismissGeneratedBanner={() => setShowGeneratedBanner(false)}
-            />
+            <PlansView />
           )}
 
           {activeNav === "settings" && (
@@ -157,21 +194,28 @@ export default function PlannerShell() {
           )}
         </motion.div>
 
-        {/* ── Right Rail ── */}
-        <div className="xl:sticky xl:top-6 xl:self-start">
-          <RightRail
-            activeNav={activeNav}
-            summaryItems={summaryItems}
-            constraintStats={constraintStats}
-            activePlanId={activePlanId}
-            comparedPlanIds={comparedPlanIds}
-            onGenerate={generation.start}
-            generating={generation.generating}
-            generationProgress={generation.progress}
-            generationStatusText={generation.statusText}
-          />
-        </div>
+        {/* ── Right Rail (for non-builder views) ── */}
+        {activeNav !== "builder" && (
+          <div className="w-full shrink-0 xl:sticky xl:top-6 xl:w-[320px]">
+            <RightRail
+              summaryItems={summaryItems}
+              constraintStats={constraintStats}
+              onGenerate={generation.start}
+              generating={generation.generating}
+              generationProgress={generation.progress}
+              generationStatusText={generation.statusText}
+            />
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+export default function PlannerShell() {
+  return (
+    <PlannerProvider>
+      <PlannerShellInner />
+    </PlannerProvider>
   );
 }
