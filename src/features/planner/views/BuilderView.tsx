@@ -21,6 +21,7 @@ import { CourseSearchModal } from "../../../components/planner/CourseSearchModal
 import { EmptyState } from "../../../components/planner/EmptyState";
 import type { BuilderTool, ConstraintStats, SummaryChipItem } from "../types";
 import { useBuilderInteractions } from "../hooks/useBuilderInteractions";
+import { BuilderPreferenceCard } from "../components/BuilderPreferenceCard";
 import { usePlannerStore } from "../store/PlannerContext";
 import { RightRail } from "./RightRail";
 
@@ -192,19 +193,25 @@ export function BuilderView({
                  toggleShowLabPeriods={toggleShowLabPeriods} 
               />
 
-              <div className="min-w-0 w-full">
-                <WeeklyPeriodGrid
-                  days={days}
-                  visiblePeriods={visiblePeriods}
-                  constraints={constraints}
-                  previewKeys={previewKeys}
-                  previewInfo={previewInfo}
-                  hoveredCell={hoveredCell}
-                  tool={tool}
-                  onCellMouseDown={onCellMouseDown}
-                  onCellMouseEnter={onCellMouseEnter}
-                  onCellMouseLeave={() => setHoveredCell(null)}
-                />
+              <div className="flex flex-col gap-6 w-full">
+                <div className="min-w-0 w-full">
+                  <WeeklyPeriodGrid
+                    days={days}
+                    visiblePeriods={visiblePeriods}
+                    constraints={constraints}
+                    previewKeys={previewKeys}
+                    previewInfo={previewInfo}
+                    hoveredCell={hoveredCell}
+                    tool={tool}
+                    onCellMouseDown={onCellMouseDown}
+                    onCellMouseEnter={onCellMouseEnter}
+                    onCellMouseLeave={() => setHoveredCell(null)}
+                  />
+                </div>
+                
+                <div className="w-full">
+                  <BuilderPreferenceCard {...modifiers} />
+                </div>
               </div>
             </>
           )}

@@ -19,7 +19,6 @@ import {
   Users,
 } from "lucide-react";
 import { SummaryChip } from "../components/SummaryChip";
-import { BuilderPreferenceCard } from "../components/BuilderPreferenceCard";
 import { generatedPlans } from "../data/mock";
 import type {
   ConstraintStats,
@@ -45,10 +44,7 @@ export function RightRail({
   generationStatusText,
 }: RightRailProps) {
   const { 
-    activeNav, activePlanId, comparedPlanIds,
-    fewerStudyDays, setFewerStudyDays,
-    closeGapClasses, setCloseGapClasses,
-    friendMatch, setFriendMatch
+    activeNav, activePlanId, comparedPlanIds
   } = usePlannerStore();
   
   const activePlan = useMemo(
@@ -65,8 +61,8 @@ export function RightRail({
 
   if (activeNav === "builder") {
     return (
-      <Card className="rounded-3xl border-slate-200 shadow-sm">
-        <CardHeader className="pb-3">
+      <Card className="flex flex-col h-full rounded-3xl border-slate-200 shadow-sm overflow-hidden">
+        <CardHeader className="shrink-0 pb-3">
           <CardTitle className="text-lg text-slate-900">
             Constraint summary
           </CardTitle>
@@ -75,21 +71,23 @@ export function RightRail({
             generate ranked schedules.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <div className="text-sm font-medium text-slate-900">
-              Single source of truth
+        
+        <CardContent className="flex flex-col flex-1 min-h-0 p-0">
+          <div className="shrink-0 space-y-4 px-6 pb-4">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div className="text-sm font-medium text-slate-900">
+                Single source of truth
+              </div>
+              <div className="mt-2 text-2xl font-semibold text-slate-950">
+                {constraintStats.totalSlotCount} slots
+              </div>
+              <div className="mt-1 text-sm text-slate-600">
+                {constraintStats.totalGroupCount} grouped constraints flow into
+                generation, ranking, and review.
+              </div>
             </div>
-            <div className="mt-2 text-2xl font-semibold text-slate-950">
-              {constraintStats.totalSlotCount} slots
-            </div>
-            <div className="mt-1 text-sm text-slate-600">
-              {constraintStats.totalGroupCount} grouped constraints flow into
-              generation, ranking, and review.
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3">
             <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
               <div className="text-sm font-medium text-blue-900">Prefer</div>
               <div className="mt-2 text-xl font-semibold text-blue-950">
@@ -130,33 +128,29 @@ export function RightRail({
               <Progress value={generationProgress} className="mt-2 h-2" />
             </div>
           )}
+        </div>
 
-          <div className="space-y-3 max-h-[420px] overflow-auto pr-1">
-            {summaryItems.map((item) => (
-              <SummaryChip key={item.id} item={item} />
-            ))}
+          <div className="flex-1 min-h-0 overflow-y-auto px-6 space-y-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {summaryItems.length > 0 ? (
+              summaryItems.map((item) => (
+                <SummaryChip key={item.id} item={item} />
+              ))
+            ) : (
+              <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">
+                No active constraints. Use the canvas to define preferences.
+              </div>
+            )}
           </div>
 
-          <Separator />
-          
-          <BuilderPreferenceCard 
-            fewerStudyDays={fewerStudyDays}
-            setFewerStudyDays={setFewerStudyDays}
-            closeGapClasses={closeGapClasses}
-            setCloseGapClasses={setCloseGapClasses}
-            friendMatch={friendMatch}
-            setFriendMatch={setFriendMatch}
-          />
-
-          <Separator />
-
-          <Button
-            className="h-12 w-full rounded-2xl bg-blue-600 text-base font-semibold hover:bg-blue-500"
-            onClick={onGenerate}
-            disabled={generating}
-          >
-            {generating ? "Generating schedules..." : "Generate schedules"}
-          </Button>
+          <div className="shrink-0 mt-auto p-6 pt-4 border-t border-slate-100 bg-white">
+            <Button
+              className="h-12 w-full rounded-2xl bg-blue-600 text-base font-semibold hover:bg-blue-500 shadow-md shadow-blue-500/20"
+              onClick={onGenerate}
+              disabled={generating}
+            >
+              {generating ? "Generating schedules..." : "Generate schedules"}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );
