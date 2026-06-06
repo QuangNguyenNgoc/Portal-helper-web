@@ -86,7 +86,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         console.error("Failed to parse data from localStorage:", e);
       }
 
-      if (storedData && storedData.courses && storedData.courses.length > 0) {
+      if (storedData && Array.isArray(storedData.courses) && storedData.courses.length > 0) {
         setCourses(storedData.courses);
         setConstraints(storedData.constraints || {});
         setPinnedSectionIds(storedData.pinnedSectionIds || []);
@@ -126,6 +126,22 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
       console.error("Failed to sync to localStorage:", e);
     }
   }, [courses, constraints, pinnedSectionIds, isFetchingData]);
+
+  // Invalidate generated plans if inputs change
+  React.useEffect(() => {
+    if (isFetchingData) return;
+    
+    // If courses or constraints change, the old plans are stale
+    setGeneratedPlansList(prev => {
+      if (prev.length > 0) {
+        // Also clear selections if we are clearing plans
+        setSelectedPrimaryPlanId(null);
+        setSelectedBackupPlanId(null);
+        return [];
+      }
+      return prev;
+    });
+  }, [courses, constraints, isFetchingData]);
 
   const clearWorkspace = useCallback(() => {
     try {
