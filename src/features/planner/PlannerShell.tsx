@@ -27,7 +27,8 @@ function PlannerShellInner() {
     setShowGeneratedBanner,
     isFetchingData,
     fetchError,
-    initializeWorkspace
+    initializeWorkspace,
+    generatedPlansList
   } = usePlannerStore();
 
   // Initialize workspace data on mount
@@ -109,6 +110,7 @@ function PlannerShellInner() {
           <div className="space-y-1 flex-1">
             {navItems.map(({ id, label, icon: Icon }) => {
               const active = activeNav === id;
+              
               return (
                 <button
                   key={id}
@@ -195,7 +197,7 @@ function PlannerShellInner() {
         </motion.div>
 
         {/* ── Right Rail (for non-builder views) ── */}
-        {activeNav !== "builder" && (
+        {activeNav !== "builder" && activeNav !== "plans" && (
           <div className="w-full shrink-0 xl:sticky xl:top-6 xl:w-[320px]">
             <RightRail
               summaryItems={summaryItems}

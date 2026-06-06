@@ -13,6 +13,8 @@ import {
   CheckCircle2,
   ShieldCheck,
   Target,
+  CalendarX,
+  ArrowRight,
 } from "lucide-react";
 import { MiniWeek } from "../components/MiniWeek";
 import { ScoreBar } from "../components/ScoreBar";
@@ -40,7 +42,31 @@ export function PlansView() {
     dismissBanner,
   } = usePlanInteractions();
   
-  const { generatedPlansList } = usePlannerStore();
+  const { generatedPlansList, setActiveNav } = usePlannerStore();
+
+  if (!generatedPlansList || generatedPlansList.length === 0) {
+    return (
+      <div className="flex h-full min-h-[600px] w-full flex-col items-center justify-center p-8">
+        <div className="flex max-w-md flex-col items-center text-center">
+          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-slate-100 text-slate-400">
+            <CalendarX className="h-10 w-10" strokeWidth={1.5} />
+          </div>
+          <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+            No schedules generated
+          </h2>
+          <p className="mt-3 text-base text-slate-500 leading-relaxed">
+            Return to the Builder to select your courses, paint your constraints, and generate optimal schedules.
+          </p>
+          <Button 
+            onClick={() => setActiveNav("builder")}
+            className="mt-8 rounded-xl bg-blue-600 px-6 py-6 text-base hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-600/20 transition-all duration-200"
+          >
+            Go to Builder <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[380px_minmax(0,1fr)]">
@@ -61,10 +87,9 @@ export function PlansView() {
           compareHint={compareHint}
         />
 
-        <DecisionSummary />
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 xl:grid xl:grid-cols-[minmax(0,1fr)_300px] xl:items-start xl:gap-4">
         <Card className="rounded-3xl border-slate-200 shadow-sm">
           <CardHeader className="pb-3">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -306,6 +331,14 @@ export function PlansView() {
             </Tabs>
           </CardContent>
         </Card>
+        
+        <div className="relative hidden xl:block">
+          <DecisionSummary />
+        </div>
+      </div>
+      
+      <div className="xl:hidden">
+         <DecisionSummary />
       </div>
     </div>
   );
