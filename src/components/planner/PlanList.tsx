@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlanListCard } from "../../features/planner/components/PlanListCard";
 import type { Plan, PlanId } from "../../features/planner/types";
+import { usePlannerStore } from "../../features/planner/store/PlannerContext";
 
 interface PlanListProps {
   plans: Plan[];
@@ -22,6 +23,8 @@ export function PlanList({
   compareLimitReached,
   compareHint,
 }: PlanListProps) {
+  const { selectedPrimaryPlanId, setSelectedPrimaryPlanId } = usePlannerStore();
+
   return (
     <Card className="rounded-3xl border-slate-200 shadow-sm">
       <CardHeader className="pb-3">
@@ -53,8 +56,10 @@ export function PlanList({
             plan={plan}
             active={activePlanId === plan.id}
             compared={comparedPlanIds.includes(plan.id)}
+            isPrimary={selectedPrimaryPlanId === plan.id}
             onOpen={() => onOpen(plan.id)}
             onToggleCompare={() => onToggleCompare(plan.id)}
+            onSelectPrimary={() => setSelectedPrimaryPlanId(plan.id)}
             compareLimitReached={compareLimitReached}
           />
         ))}

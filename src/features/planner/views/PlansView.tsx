@@ -61,10 +61,9 @@ export function PlansView() {
           compareHint={compareHint}
         />
 
-        <DecisionSummary />
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 xl:grid xl:grid-cols-[minmax(0,1fr)_300px] xl:items-start xl:gap-4">
         <Card className="rounded-3xl border-slate-200 shadow-sm">
           <CardHeader className="pb-3">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -306,6 +305,14 @@ export function PlansView() {
             </Tabs>
           </CardContent>
         </Card>
+        
+        <div className="relative hidden xl:block">
+          <DecisionSummary />
+        </div>
+      </div>
+      
+      <div className="xl:hidden">
+         <DecisionSummary />
       </div>
     </div>
   );

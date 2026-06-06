@@ -12,6 +12,8 @@ interface PlannerContextType {
   setActivePlanId: (id: PlanId) => void;
   comparedPlanIds: PlanId[];
   setComparedPlanIds: React.Dispatch<React.SetStateAction<PlanId[]>>;
+  selectedPrimaryPlanId: PlanId | null;
+  setSelectedPrimaryPlanId: (id: PlanId | null) => void;
   selectedBackupPlanId: PlanId | null;
   setSelectedBackupPlanId: (id: PlanId | null) => void;
   fewerStudyDays: boolean;
@@ -50,6 +52,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   const [constraints, setConstraints] = useState<ConstraintMap>({});
   const [activePlanId, setActivePlanId] = useState<PlanId>("A");
   const [comparedPlanIds, setComparedPlanIds] = useState<PlanId[]>(["A", "B"]);
+  const [selectedPrimaryPlanId, setSelectedPrimaryPlanId] = useState<PlanId | null>(null);
   const [selectedBackupPlanId, setSelectedBackupPlanId] = useState<PlanId | null>(null);
   const [fewerStudyDays, setFewerStudyDays] = useState(true);
   const [closeGapClasses, setCloseGapClasses] = useState(true);
@@ -127,6 +130,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     constraints, setConstraints,
     activePlanId, setActivePlanId,
     comparedPlanIds, setComparedPlanIds,
+    selectedPrimaryPlanId, setSelectedPrimaryPlanId,
     selectedBackupPlanId, setSelectedBackupPlanId,
     fewerStudyDays, setFewerStudyDays,
     closeGapClasses, setCloseGapClasses,
