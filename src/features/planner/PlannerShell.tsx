@@ -197,7 +197,7 @@ function PlannerShellInner() {
         </motion.div>
 
         {/* ── Right Rail (for non-builder views) ── */}
-        {activeNav !== "builder" && (
+        {activeNav !== "builder" && activeNav !== "plans" && (
           <div className="w-full shrink-0 xl:sticky xl:top-6 xl:w-[320px]">
             <RightRail
               summaryItems={summaryItems}
