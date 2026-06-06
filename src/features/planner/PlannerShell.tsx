@@ -79,13 +79,13 @@ function PlannerShellInner() {
     );
   }
   return (
-    <div className="flex min-h-screen w-full flex-col bg-slate-100 p-4 md:flex-row md:items-start md:gap-4 md:p-6">
+    <div className="flex h-screen w-full flex-col overflow-hidden bg-slate-100 p-4 md:flex-row md:gap-4 md:p-6">
       {/* ── Left Sidebar (collapsible, sticky) ── */}
       <Card 
-        className={`mb-4 shrink-0 flex flex-col rounded-3xl border-slate-200 bg-slate-950 text-white shadow-xl transition-all duration-300 ease-in-out md:sticky md:top-6 md:mb-0
+        className={`mb-4 shrink-0 flex flex-col rounded-3xl border-slate-200 bg-slate-950 text-white shadow-xl transition-all duration-300 ease-in-out md:mb-0 md:h-[calc(100vh-3rem)]
         ${isExpanded ? "w-full md:w-[240px]" : "w-full md:w-[80px]"}`}
       >
-        <CardContent className="flex flex-1 flex-col p-4">
+        <CardContent className="flex flex-1 flex-col overflow-y-auto p-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {/* Header / Logo */}
           <div className={`mb-6 flex items-center ${isExpanded ? "gap-3 px-2" : "justify-center"} pt-2`}>
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-600">
@@ -163,12 +163,12 @@ function PlannerShellInner() {
       </Card>
 
       {/* ── Main content area (fluid, takes all remaining width) ── */}
-      <div className="flex min-w-0 flex-1 flex-col gap-4 xl:flex-row xl:items-start">
+      <div className="flex min-w-0 flex-1 flex-col gap-4 xl:flex-row h-[calc(100vh-3rem)] overflow-hidden">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
-          className="min-w-0 flex-1 space-y-4"
+          className="min-w-0 flex-1 space-y-4 h-full overflow-hidden"
         >
           {activeNav === "dashboard" && (
             <DashboardView
@@ -198,7 +198,7 @@ function PlannerShellInner() {
 
         {/* ── Right Rail (for non-builder views) ── */}
         {activeNav !== "builder" && activeNav !== "plans" && (
-          <div className="w-full shrink-0 xl:sticky xl:top-6 xl:w-[320px]">
+          <div className="w-full shrink-0 xl:h-full xl:w-[320px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <RightRail
               summaryItems={summaryItems}
               constraintStats={constraintStats}

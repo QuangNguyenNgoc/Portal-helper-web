@@ -64,9 +64,9 @@ export function BuilderView({
   const totalCredits = courses.reduce((sum, course) => sum + (course.credits || 0), 0);
 
   return (
-    <div className="min-w-0 space-y-4 overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-2rem)] min-w-0 space-y-4 overflow-hidden">
       {generating && (
-        <Card className="rounded-3xl border-blue-200 bg-blue-50 shadow-sm">
+        <Card className="shrink-0 rounded-3xl border-blue-200 bg-blue-50 shadow-sm">
           <CardContent className="p-5">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div>
@@ -94,9 +94,9 @@ export function BuilderView({
         </Card>
       )}
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)_300px]">
+      <div className="flex-1 min-h-0 grid grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)_300px] overflow-hidden">
         {/* ── Left Column (Input + Output Fallback) ── */}
-        <div className="space-y-8 pr-2">
+        <div className="h-full overflow-y-auto pr-2 pb-8 space-y-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div>
             <div className="mb-4 flex items-center justify-between">
               <div>
@@ -156,7 +156,7 @@ export function BuilderView({
         </div>
 
         {/* ── Middle Column (Canvas or Conflict Fallback) ── */}
-        <div className={`min-w-0 overflow-hidden ${generating ? "pointer-events-none opacity-70" : ""}`}>
+        <div className={`h-full overflow-y-auto pr-2 pb-8 min-w-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${generating ? "pointer-events-none opacity-70" : ""}`}>
           {hasGenerationConflict ? (
             <div className="flex h-full min-h-[500px] flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white shadow-sm xl:col-span-2">
               <EmptyState 
@@ -206,7 +206,7 @@ export function BuilderView({
         </div>
 
         {/* ── Right Column (Output) ── */}
-        <div className="hidden space-y-4 xl:block">
+        <div className="hidden h-full overflow-y-auto pr-2 pb-8 space-y-4 xl:block [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <RightRail
             summaryItems={summaryItems}
             constraintStats={constraintStats}
