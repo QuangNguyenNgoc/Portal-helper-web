@@ -103,10 +103,20 @@ export function BuilderView({
                 <h2 className="text-lg font-semibold text-slate-900">Course selection</h2>
                 <p className="text-sm text-slate-500 mt-1">Add target courses before generating schedules.</p>
               </div>
-              <Badge variant="secondary" className="bg-slate-100 text-slate-700 hover:bg-slate-200">
-                Total: {totalCredits} credits
-              </Badge>
+              <div className="flex flex-col items-end gap-1">
+                <Badge variant="secondary" className="bg-slate-100 text-slate-700 hover:bg-slate-200">
+                  Total: {totalCredits} credits
+                </Badge>
+                {totalCredits > 22 && (
+                  <span className="text-xs font-medium text-amber-600">High credit load warning</span>
+                )}
+              </div>
             </div>
+            {totalCredits > 22 && (
+              <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 shadow-sm">
+                <strong>High credit load:</strong> Finding a conflict-free schedule may be impossible. Consider dropping a course if generation fails.
+              </div>
+            )}
             <div className="space-y-3">
               {courses.map((course) => (
                 <CourseCard key={course.code} {...course} />

@@ -69,29 +69,34 @@ export function PlansView() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[380px_minmax(0,1fr)]">
-      <div className="space-y-4">
-        <StatusBanner
-          generatedResult={generatedResult}
-          showGeneratedBanner={showGeneratedBanner}
-          onDismiss={dismissBanner}
-        />
+    <div className="grid h-[calc(100vh-2rem)] grid-cols-1 gap-4 xl:grid-cols-[360px_minmax(0,1fr)_300px] xl:items-start overflow-hidden">
+      {/* Left Column: Plan List */}
+      <div className="flex h-full flex-col space-y-4 overflow-hidden">
+        <div className="shrink-0">
+          <StatusBanner
+            generatedResult={generatedResult}
+            showGeneratedBanner={showGeneratedBanner}
+            onDismiss={dismissBanner}
+          />
+        </div>
 
-        <PlanList
-          plans={generatedPlansList}
-          activePlanId={activePlanId}
-          comparedPlanIds={comparedPlanIds}
-          onOpen={setActivePlanId}
-          onToggleCompare={toggleCompare}
-          compareLimitReached={compareLimitReached}
-          compareHint={compareHint}
-        />
-
+        <div className="flex-1 overflow-y-auto pr-2 pb-4">
+          <PlanList
+            plans={generatedPlansList}
+            activePlanId={activePlanId}
+            comparedPlanIds={comparedPlanIds}
+            onOpen={setActivePlanId}
+            onToggleCompare={toggleCompare}
+            compareLimitReached={compareLimitReached}
+            compareHint={compareHint}
+          />
+        </div>
       </div>
 
-      <div className="space-y-4 xl:grid xl:grid-cols-[minmax(0,1fr)_300px] xl:items-start xl:gap-4">
-        <Card className="rounded-3xl border-slate-200 shadow-sm">
-          <CardHeader className="pb-3">
+      {/* Middle Column: Detail Tabs */}
+      <div className="flex h-full flex-col overflow-hidden">
+        <Card className="flex h-full flex-col rounded-3xl border-slate-200 shadow-sm overflow-hidden">
+          <CardHeader className="shrink-0 pb-3">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
                 <CardTitle className="text-xl text-slate-900">
@@ -113,7 +118,7 @@ export function PlansView() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 overflow-y-auto pb-6 pr-2">
             <Tabs defaultValue="detail" className="space-y-4">
               <TabsList className="grid w-full grid-cols-3 rounded-2xl bg-slate-100">
                 <TabsTrigger value="detail" className="rounded-xl">
@@ -331,12 +336,14 @@ export function PlansView() {
             </Tabs>
           </CardContent>
         </Card>
-        
-        <div className="relative hidden xl:block">
-          <DecisionSummary />
-        </div>
       </div>
       
+      {/* Right Column: Decision Summary */}
+      <div className="hidden h-full xl:block shrink-0 overflow-y-auto">
+        <DecisionSummary />
+      </div>
+      
+      {/* Mobile Decision Summary */}
       <div className="xl:hidden">
          <DecisionSummary />
       </div>
