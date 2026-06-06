@@ -12,6 +12,8 @@ interface PlannerContextType {
   setActivePlanId: (id: PlanId) => void;
   comparedPlanIds: PlanId[];
   setComparedPlanIds: React.Dispatch<React.SetStateAction<PlanId[]>>;
+  selectedBackupPlanId: PlanId | null;
+  setSelectedBackupPlanId: (id: PlanId | null) => void;
   fewerStudyDays: boolean;
   setFewerStudyDays: (val: boolean) => void;
   closeGapClasses: boolean;
@@ -48,6 +50,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   const [constraints, setConstraints] = useState<ConstraintMap>({});
   const [activePlanId, setActivePlanId] = useState<PlanId>("A");
   const [comparedPlanIds, setComparedPlanIds] = useState<PlanId[]>(["A", "B"]);
+  const [selectedBackupPlanId, setSelectedBackupPlanId] = useState<PlanId | null>(null);
   const [fewerStudyDays, setFewerStudyDays] = useState(true);
   const [closeGapClasses, setCloseGapClasses] = useState(true);
   const [friendMatch, setFriendMatch] = useState(false);
@@ -124,6 +127,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     constraints, setConstraints,
     activePlanId, setActivePlanId,
     comparedPlanIds, setComparedPlanIds,
+    selectedBackupPlanId, setSelectedBackupPlanId,
     fewerStudyDays, setFewerStudyDays,
     closeGapClasses, setCloseGapClasses,
     friendMatch, setFriendMatch,

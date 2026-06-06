@@ -21,6 +21,7 @@ import { usePlanInteractions } from "../hooks/usePlanInteractions";
 import { StatusBanner } from "../../../components/planner/StatusBanner";
 import { PlanList } from "../../../components/planner/PlanList";
 import { PlanComparisonTable } from "../../../components/planner/PlanComparisonTable";
+import { DecisionSummary } from "../../../components/planner/DecisionSummary";
 import { usePlannerStore } from "../store/PlannerContext";
 
 export function PlansView() {
@@ -60,46 +61,7 @@ export function PlansView() {
           compareHint={compareHint}
         />
 
-        <Card className="rounded-3xl border-slate-200 shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg text-slate-900">
-              Saved plan strategy
-            </CardTitle>
-            <CardDescription>
-              Support the primary + backup decision model instead of a single
-              winner.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm text-slate-600">
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-              <div className="font-medium text-emerald-900">
-                Plan A → Primary registration target
-              </div>
-              <div className="mt-1 text-emerald-800">
-                Best fit for constraints and still resilient if one section
-                shifts.
-              </div>
-            </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <div className="font-medium text-slate-900">
-                Plan B → Lower-intensity backup
-              </div>
-              <div className="mt-1">
-                Safer if you want softer daily effort without rebuilding
-                constraints.
-              </div>
-            </div>
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-              <div className="font-medium text-amber-900">
-                Plan C → Emergency fallback
-              </div>
-              <div className="mt-1 text-amber-800">
-                Use only if preferred sections fill; timing alignment drops
-                noticeably.
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <DecisionSummary />
       </div>
 
       <div className="space-y-4">
