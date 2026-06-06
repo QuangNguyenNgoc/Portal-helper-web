@@ -42,6 +42,17 @@ export function PlansView() {
   
   const { generatedPlansList } = usePlannerStore();
 
+  if (!generatedPlansList || generatedPlansList.length === 0) {
+    return (
+      <div className="flex min-h-[500px] w-full flex-col items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm">
+        <h2 className="text-xl font-semibold text-slate-900">No Schedules Generated</h2>
+        <p className="mt-2 text-slate-500 max-w-md">
+          You haven't generated any schedules yet, or the workspace was reset. Return to the Builder to set your constraints and generate plans.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[380px_minmax(0,1fr)]">
       <div className="space-y-4">

@@ -27,7 +27,8 @@ function PlannerShellInner() {
     setShowGeneratedBanner,
     isFetchingData,
     fetchError,
-    initializeWorkspace
+    initializeWorkspace,
+    generatedPlansList
   } = usePlannerStore();
 
   // Initialize workspace data on mount
@@ -109,17 +110,25 @@ function PlannerShellInner() {
           <div className="space-y-1 flex-1">
             {navItems.map(({ id, label, icon: Icon }) => {
               const active = activeNav === id;
+              const isDisabled = id === "plans" && (!generatedPlansList || generatedPlansList.length === 0);
+              
               return (
                 <button
                   key={id}
-                  onClick={() => setActiveNav(id)}
-                  title={!isExpanded ? label : undefined}
+                  onClick={() => {
+                    if (isDisabled) return;
+                    setActiveNav(id);
+                  }}
+                  disabled={isDisabled}
+                  title={isDisabled ? "Generate schedules first" : !isExpanded ? label : undefined}
                   className={`flex w-full items-center rounded-2xl px-3 py-3 transition-colors ${
                     isExpanded ? "gap-3 justify-start" : "justify-center"
                   } ${
-                    active
-                      ? "bg-white text-slate-950"
-                      : "text-slate-300 hover:bg-slate-900"
+                    isDisabled
+                      ? "text-slate-600 cursor-not-allowed opacity-50 hover:bg-transparent"
+                      : active
+                        ? "bg-white text-slate-950"
+                        : "text-slate-300 hover:bg-slate-900"
                   }`}
                 >
                   <Icon className="h-5 w-5 shrink-0" />

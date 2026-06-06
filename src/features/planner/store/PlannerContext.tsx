@@ -140,6 +140,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     setHasGenerationConflict(false);
     setSelectedPrimaryPlanId(null);
     setSelectedBackupPlanId(null);
+    setActiveNav("builder");
   }, []);
 
   const addCourse = useCallback((newCourse: Course) => {
