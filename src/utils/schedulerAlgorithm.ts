@@ -15,6 +15,10 @@ for (const d of days) {
 
 // ── Schedule Parser ──
 function parseScheduleToGridIds(scheduleStr: string): string[] {
+  if (!scheduleStr || scheduleStr.includes("TBA") || scheduleStr.includes("Online")) {
+    return [];
+  }
+
   const result: string[] = [];
   const scheduleDays: string[] = [];
 
@@ -26,20 +30,34 @@ function parseScheduleToGridIds(scheduleStr: string): string[] {
   if (scheduleStr.includes("Sat")) scheduleDays.push("Sat");
 
   let timeSlots: string[] = [];
-  // Mock parser rules mapped to UI grid slots
-  if (scheduleStr.includes("8:00 AM")) timeSlots = ["1"];
-  if (scheduleStr.includes("9:00 AM")) timeSlots = ["1", "2"];
-  if (scheduleStr.includes("9:30")) timeSlots = ["1", "2"];
-  if (scheduleStr.includes("10:00 AM")) timeSlots = ["2", "2.5"];
-  if (scheduleStr.includes("11:00")) timeSlots = ["4"];
-  if (scheduleStr.includes("12:00")) timeSlots = ["4"];
-  if (scheduleStr.includes("1:00 PM")) timeSlots = ["4", "5"];
-  if (scheduleStr.includes("2:00 PM")) timeSlots = ["6", "7"];
-  if (scheduleStr.includes("3:00 PM")) timeSlots = ["6", "7"];
-  if (scheduleStr.includes("4:00 PM")) timeSlots = ["8", "8.5"];
-
-  // Fallback for unmapped mock strings
-  if (timeSlots.length === 0) timeSlots = ["1"];
+  
+  // Extract patterns like "1-3" or "4-6"
+  const match = scheduleStr.match(/(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)/);
+  if (match) {
+    const start = parseFloat(match[1]);
+    const end = parseFloat(match[2]);
+    // Our slots are ["1", "2", "2.5", "4", "5", "6", "7", "8", "8.5", "9", "10"]
+    // We can iterate over the slots and include any slot where slotValue >= start and slotValue <= end
+    const possibleSlots = ["1", "2", "2.5", "4", "5", "6", "7", "8", "8.5", "9", "10"];
+    for (const s of possibleSlots) {
+       const val = parseFloat(s);
+       if (val >= start && val <= end) {
+         timeSlots.push(s);
+       }
+    }
+  } else {
+    // Fallback logic for mock strings
+    if (scheduleStr.includes("8:00 AM")) timeSlots = ["1"];
+    else if (scheduleStr.includes("9:00 AM")) timeSlots = ["1", "2"];
+    else if (scheduleStr.includes("9:30")) timeSlots = ["1", "2"];
+    else if (scheduleStr.includes("10:00 AM")) timeSlots = ["2", "2.5"];
+    else if (scheduleStr.includes("11:00")) timeSlots = ["4"];
+    else if (scheduleStr.includes("12:00")) timeSlots = ["4"];
+    else if (scheduleStr.includes("1:00 PM")) timeSlots = ["4", "5"];
+    else if (scheduleStr.includes("2:00 PM")) timeSlots = ["6", "7"];
+    else if (scheduleStr.includes("3:00 PM")) timeSlots = ["6", "7"];
+    else if (scheduleStr.includes("4:00 PM")) timeSlots = ["8", "8.5"];
+  }
 
   for (const d of scheduleDays) {
     for (const s of timeSlots) {
@@ -100,6 +118,9 @@ export function generateValidPlans(
     currentMask: bigint,
     currentCombination: any[]
   ) {
+    // Hard Circuit Breaker to prevent Main Thread Freezing on Combinatorial Explosion
+    if (validCombinations.length >= 100) return;
+
     // Found a valid schedule containing all requested courses
     if (courseIndex === processedCourses.length) {
       validCombinations.push([...currentCombination]);

@@ -61,6 +61,7 @@ export function BuilderView({
   } = gridInteraction;
 
   const visiblePeriods = showLabPeriods ? timeSlots : timeSlots.filter(p => p !== '2.5' && p !== '8.5');
+  const totalCredits = courses.reduce((sum, course) => sum + (course.credits || 0), 0);
 
   return (
     <div className="min-w-0 space-y-4 overflow-hidden">
@@ -97,9 +98,14 @@ export function BuilderView({
         {/* ── Left Column (Input + Output Fallback) ── */}
         <div className="space-y-8 pr-2">
           <div>
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold text-slate-900">Course selection</h2>
-              <p className="text-sm text-slate-500 mt-1">Add target courses before generating schedules.</p>
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Course selection</h2>
+                <p className="text-sm text-slate-500 mt-1">Add target courses before generating schedules.</p>
+              </div>
+              <Badge variant="secondary" className="bg-slate-100 text-slate-700 hover:bg-slate-200">
+                Total: {totalCredits} credits
+              </Badge>
             </div>
             <div className="space-y-3">
               {courses.map((course) => (
