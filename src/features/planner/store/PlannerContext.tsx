@@ -43,9 +43,12 @@ interface PlannerContextType {
   hasGenerationConflict: boolean;
   setHasGenerationConflict: (val: boolean) => void;
   clearAvoidConstraints: () => void;
+  clearWorkspace: () => void;
 }
 
 const PlannerContext = createContext<PlannerContextType | undefined>(undefined);
+
+const STORAGE_KEY = "hcmus_planner_data";
 
 export function PlannerProvider({ children }: { children: ReactNode }) {
   const [activeNav, setActiveNav] = useState<NavId>("builder");
@@ -73,17 +76,70 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     setIsFetchingData(true);
     setFetchError(null);
     try {
-      const [fetchedCourses, fetchedConstraints] = await Promise.all([
-        fetchCourses(),
-        fetchConstraints()
-      ]);
-      setCourses(fetchedCourses);
-      setConstraints(fetchedConstraints);
+      let storedData = null;
+      try {
+        const rawData = localStorage.getItem(STORAGE_KEY);
+        if (rawData) {
+          storedData = JSON.parse(rawData);
+        }
+      } catch (e) {
+        console.error("Failed to parse data from localStorage:", e);
+      }
+
+      if (storedData && storedData.courses && storedData.courses.length > 0) {
+        setCourses(storedData.courses);
+        setConstraints(storedData.constraints || {});
+        setPinnedSectionIds(storedData.pinnedSectionIds || []);
+        
+        // Add a slight simulated delay for hydration realism
+        await new Promise(resolve => setTimeout(resolve, 300));
+      } else {
+        // Fallback: load default mock data on very first use
+        const [fetchedCourses, fetchedConstraints] = await Promise.all([
+          fetchCourses(),
+          fetchConstraints()
+        ]);
+        setCourses(fetchedCourses);
+        setConstraints(fetchedConstraints);
+        setPinnedSectionIds([]);
+      }
     } catch (err) {
-      setFetchError("Failed to load planner data from university systems.");
+      setFetchError("Failed to load planner data.");
     } finally {
       setIsFetchingData(false);
     }
+  }, []);
+
+  // Sync to localStorage whenever core data changes
+  React.useEffect(() => {
+    // Only sync if we have finished initializing to avoid overwriting existing data with empty defaults
+    if (isFetchingData) return;
+
+    try {
+      const dataToStore = {
+        courses,
+        constraints,
+        pinnedSectionIds,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToStore));
+    } catch (e) {
+      console.error("Failed to sync to localStorage:", e);
+    }
+  }, [courses, constraints, pinnedSectionIds, isFetchingData]);
+
+  const clearWorkspace = useCallback(() => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch(e) {
+      console.error("Failed to clear localStorage:", e);
+    }
+    setCourses([]);
+    setConstraints({});
+    setPinnedSectionIds([]);
+    setGeneratedPlansList([]);
+    setHasGenerationConflict(false);
+    setSelectedPrimaryPlanId(null);
+    setSelectedBackupPlanId(null);
   }, []);
 
   const addCourse = useCallback((newCourse: Course) => {
@@ -146,6 +202,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     initializeWorkspace,
     hasGenerationConflict, setHasGenerationConflict,
     clearAvoidConstraints,
+    clearWorkspace,
   };
 
   return <PlannerContext.Provider value={value}>{children}</PlannerContext.Provider>;
