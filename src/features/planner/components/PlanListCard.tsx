@@ -33,7 +33,7 @@ export function PlanListCard({
             : "border-slate-200 shadow-sm hover:border-slate-300 hover:shadow"
       }`}
     >
-      <CardContent className="space-y-4 p-4">
+      <CardContent className="space-y-2.5 px-4 py-3">
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
@@ -74,18 +74,18 @@ export function PlanListCard({
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-2 text-sm text-slate-600">
-          <div className="rounded-xl bg-slate-50 px-3 py-2">
-            {plan.studyDays} study days
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-600">
+          <div className="flex items-center gap-1">
+            <span className="font-medium text-slate-900">{plan.studyDays}</span> days
           </div>
-          <div className="rounded-xl bg-slate-50 px-3 py-2">
-            Gap: {plan.gapProfile}
+          <div className="flex items-center gap-1">
+            <span className="font-medium text-slate-900">Gap:</span> {plan.gapProfile}
           </div>
-          <div className="rounded-xl bg-slate-50 px-3 py-2">
-            Seat risk: {plan.seatRisk}
+          <div className="flex items-center gap-1">
+            <span className="font-medium text-slate-900">Seat risk:</span> {plan.seatRisk}
           </div>
-          <div className="rounded-xl bg-slate-50 px-3 py-2">
-            Friend: {plan.friendMatch}%
+          <div className="flex items-center gap-1">
+            <span className="font-medium text-slate-900">Friend:</span> {plan.friendMatch}%
           </div>
         </div>
 
